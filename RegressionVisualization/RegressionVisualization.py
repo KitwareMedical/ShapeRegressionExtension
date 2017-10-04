@@ -100,9 +100,10 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.sequenceBrowserPlay_pushButton_VcrLast = self.sequenceBrowserPlayWidget.children()[5]
     self.sequenceBrowserPlay_pushButton_VcrPlayPause.connect('clicked()', self.playpauseSequence)
     self.play = False
-    self.sequence = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLSequenceNode')
-    self.sequencebrowser = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLSequenceBrowserNode')
-
+    self.modelsequence = slicer.mrmlScene.AddNode(slicer.vtkMRMLSequenceNode())
+    self.sequencebrowser = slicer.mrmlScene.AddNode(slicer.vtkMRMLSequenceBrowserNode())
+    self.displaynodesequence = slicer.mrmlScene.AddNode(slicer.vtkMRMLSequenceNode())
+    self.displaynodesequence.SetHideFromEditors(0)
 
   def enter(self):
     pass
@@ -193,28 +194,35 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     for number, shapeBasename in self.InputShapes.items():
       shapeRootname = shapeBasename.split(".vtk")[0]
       model = MRMLUtility.loadMRMLNode(shapeRootname, inputDirectory, shapeBasename, 'ModelFile')
-      #displayNode = model.GetDisplayNode()
-      #displayNode.VisibilityOff()
-      #color = float(number/float(len(self.InputShapes)))
-      #displayNode.SetColor(1, 0, color)
       self.RegressionModels[number] = model
 
 
   def sequenceCreation(self):
     print "Sequence Creation"
 
-    # Creation of the sequence
     for number, model in self.RegressionModels.items():
-      model = self.sequence.SetDataNodeAtValue(model, str(number))
 
-      # Adding of a color for each model copied in the sequence
-      displayNode = slicer.vtkMRMLModelDisplayNode()
+      # Adding of the models to the model sequence
+      self.modelsequence.SetDataNodeAtValue(model, str(number))
+      slicer.mrmlScene.RemoveNode(model)
+
+      # Adding of the model display nodes to the model display node sequence
+      modeldisplay = slicer.mrmlScene.AddNode(slicer.vtkMRMLModelDisplayNode())
       color = float(number / float(len(self.InputShapes)))
-      displayNode.SetColor(1, 0, color)
-      model.SetAndObserveDisplayNodeID(displayNode.GetID())
+      modeldisplay.SetColor(1, 0, color)
+      slicer.mrmlScene.RemoveNode(modeldisplay)
+      self.displaynodesequence.SetDataNodeAtValue(modeldisplay, str(number))
 
-    # Adding of the sequence to the Sequence Browser
-    self.sequencebrowser.AddSynchronizedSequenceNodeID(self.sequence.GetID())
+    # Adding of the sequences to the Sequence Browser
+    self.sequencebrowser.AddSynchronizedSequenceNodeID(self.modelsequence.GetID())
+    self.sequencebrowser.AddSynchronizedSequenceNodeID(self.displaynodesequence.GetID())
+
+    # Replace default display node that is created automatically
+    # by the display proxy node
+    modelProxyNode = self.sequencebrowser.GetProxyNode(self.modelsequence)
+    modelDisplayProxyNode = self.sequencebrowser.GetProxyNode(self.displaynodesequence)
+    slicer.mrmlScene.RemoveNode(modelProxyNode.GetDisplayNode())
+    modelProxyNode.SetAndObserveDisplayNodeID(modelDisplayProxyNode.GetID())
 
 # Play/Pause the sequence thank to the sequence browser play widget
   def playpauseSequence(self):
