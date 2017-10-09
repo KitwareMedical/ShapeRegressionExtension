@@ -93,13 +93,13 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.sequenceBrowserPlayWidget = slicer.qMRMLSequenceBrowserPlayWidget()
     self.CollapsibleButton_Sequence.layout().addWidget(self.sequenceBrowserPlayWidget)
     self.sequenceBrowserPlayWidget.enabled = False
-    self.sequenceBrowserPlay_pushButton_VcrFirst = self.sequenceBrowserPlayWidget.children()[1]
-    self.sequenceBrowserPlay_pushButton_VcrPrevious = self.sequenceBrowserPlayWidget.children()[2]
-    self.sequenceBrowserPlay_pushButton_VcrPlayPause = self.sequenceBrowserPlayWidget.children()[3]
-    self.sequenceBrowserPlay_pushButton_VcrNext = self.sequenceBrowserPlayWidget.children()[4]
-    self.sequenceBrowserPlay_pushButton_VcrLast = self.sequenceBrowserPlayWidget.children()[5]
-    self.sequenceBrowserPlay_pushButton_VcrPlayPause.connect('clicked()', self.playpauseSequence)
-    self.play = False
+
+    ## Sequence Browser Seek Widget Configuration
+    self.sequenceBrowserSeekWidget = slicer.qMRMLSequenceBrowserSeekWidget()
+    self.CollapsibleButton_Sequence.layout().addWidget(self.sequenceBrowserSeekWidget)
+    self.sequenceBrowserSeekWidget.enabled = False
+
+    ##
     self.modelsequence = slicer.mrmlScene.AddNode(slicer.vtkMRMLSequenceNode())
     self.sequencebrowser = slicer.mrmlScene.AddNode(slicer.vtkMRMLSequenceBrowserNode())
     self.displaynodesequence = slicer.mrmlScene.AddNode(slicer.vtkMRMLSequenceNode())
@@ -168,6 +168,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
 
     # Enable the sequence Browser Play Widget GUI
     self.sequenceBrowserPlayWidget.enabled = True
+    self.sequenceBrowserSeekWidget.enabled = True
 
     # Load the models in Slicer
     self.loadModels()
@@ -224,19 +225,10 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     slicer.mrmlScene.RemoveNode(modelProxyNode.GetDisplayNode())
     modelProxyNode.SetAndObserveDisplayNodeID(modelDisplayProxyNode.GetID())
 
-# Play/Pause the sequence thank to the sequence browser play widget
-  def playpauseSequence(self):
-    print "Play/Pause the Sequence"
-
-    self.play = not self.play
-    self.sequenceBrowserPlayWidget.enabled = True
-
-    if self.play :
-      # Play the sequence
-      self.sequencebrowser.PlaybackActiveOn()
-    elif not self.play:
-      # Pause the sequence
-      self.sequencebrowser.PlaybackActiveOff()
+    # Set the sequence browser for the sequence browser seek widget
+    self.sequenceBrowserSeekWidget.setMRMLSequenceBrowserNode(self.sequencebrowser)
+    self.sequenceBrowserPlayWidget.setMRMLSequenceBrowserNode(self.sequencebrowser)
+    self.sequencebrowser.SetRecording(self.modelsequence, True);
 
 #
 # RegressionVisualizationLogic
