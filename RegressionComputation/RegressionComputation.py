@@ -2,7 +2,11 @@ import os, sys
 import unittest
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
+from slicer.util import VTKObservationMixin
+import platform
 import csv
+import logging
+
 
 #
 # RegressionComputation
@@ -151,31 +155,44 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
       selectedCollapsibleButton.setChecked(True)
 
   def warningMessage(self, text, informativeText):
-      messageBox = ctk.ctkMessageBox()
-      messageBox.setWindowTitle(' /!\ WARNING /!\ ')
-      messageBox.setIcon(messageBox.Warning)
-      messageBox.setText(text)
-      if not informativeText == None:
-        messageBox.setInformativeText(informativeText)
-      messageBox.setStandardButtons(messageBox.Ok)
-      messageBox.exec_()
+    messageBox = ctk.ctkMessageBox()
+    messageBox.setWindowTitle(' /!\ WARNING /!\ ')
+    messageBox.setIcon(messageBox.Warning)
+    messageBox.setText(text)
+    if not informativeText == None:
+      messageBox.setInformativeText(informativeText)
+    messageBox.setStandardButtons(messageBox.Ok)
+    messageBox.exec_()
 
   def onApplyButton(self):
-    self.Logic.parameters.updateShape4DParameters()
-    self.Logic.runShape4D()
-
+    if self.applyButton.text == "Run Shape4D":
+      logging.info('Widget: Running Shape4D')
+      self.applyButton.setText("Cancel")
+      self.Logic.parameters.updateShape4DParameters()
+      self.Logic.runShape4D()
+    else:
+      logging.info('Cancel Shape4D')
+      self.applyButton.setText("Run Shape4D")
+      self.Logic.shape4D_cli_node.SetStatus(self.Logic.shape4D_cli_node.Cancelling)
 
 #
 # RegressionComputationLogic
 #
-class RegressionComputationLogic(ScriptedLoadableModuleLogic):
+class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixin):
   """
   Uses ScriptedLoadableModuleLogic base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
   def __init__(self, interface):
+    VTKObservationMixin.__init__(self)
+
     self.interface = interface
     self.parameters = RegressionComputationParameters(interface)
+    self.StatusModifiedEvent = slicer.vtkMRMLCommandLineModuleNode().StatusModifiedEvent
+    self.shape4D_module = slicer.modules.shape4d
+    self.shape4D_cli_node = slicer.cli.createNode(self.shape4D_module)
+    shape4D_cli_node_name = "Shape4D"
+    self.shape4D_cli_node.SetName(shape4D_cli_node_name)
 
   def runShape4D(self):
     print "Run Shape4D"
@@ -187,10 +204,8 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic):
     parameters = {}
     print XMLdriverfilepath
     parameters["inputXML"] = XMLdriverfilepath
-    shape4D = slicer.modules.shape4d
-    slicer.cli.run(shape4D, None, parameters, wait_for_completion=True)
-
-    return True
+    self.addObserver(self.shape4D_cli_node, self.StatusModifiedEvent, self.onCLIModuleModified)
+    slicer.cli.run(self.shape4D_module, self.shape4D_cli_node, parameters, wait_for_completion=False)
 
   def writeXMLdriverFile(self):
     print "Write XML driver file"
@@ -304,6 +319,34 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic):
     # print self.sigmaWs
     # print self.shapeIndices
     # print self.weights
+
+  def onCLIModuleModified(self, cli_node, event):
+    statusForNode = None
+    if not cli_node.IsBusy():
+      if platform.system() != 'Windows':
+        self.removeObserver(cli_node, self.StatusModifiedEvent, self.onCLIModuleModified)
+        statusForNode = None
+
+      if cli_node.GetStatusString() == 'Completed':
+        statusForNode = cli_node.GetStatusString()
+
+      elif cli_node.GetStatusString() == 'Cancelled':
+        self.ErrorMessage = "Shape4D cancelled"
+        statusForNode = cli_node.GetStatusString()
+
+      else:
+        # Create Error Message
+        if cli_node.GetStatusString() == 'Completed with errors':
+          self.ErrorMessage = "Shape4D completed with errors"
+          statusForNode = cli_node.GetStatusString()
+
+      # Create Error Message
+      if statusForNode == 'Completed with errors' or statusForNode == 'Cancelled':
+        logging.error(self.ErrorMessage)
+        qt.QMessageBox.critical(slicer.util.mainWindow(),
+                                'RegressionComputation',
+                                self.ErrorMessage)
+
 
 #
 # RegressionComputationParameters
