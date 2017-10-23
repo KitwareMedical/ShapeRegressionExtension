@@ -94,6 +94,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
 
     # Run Shape4D
     self.applyButton = self.getWidget('pushButton_RunShape4D')
+    self.CLIProgressBar_shape4D = self.getWidget('CLIProgressBar_shape4D')
 
     # Connect Functions
     self.CollapsibleButton_RegressionComputationInput.connect('clicked()',
@@ -118,8 +119,8 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     slicer.mrmlScene.AddObserver(slicer.mrmlScene.EndCloseEvent, self.onCloseScene)
 
     # Widget Configuration
-    # TODO
-
+    #   Progress Bar of Shape4D CLI
+    self.CLIProgressBar_shape4D.hide()
 
   def enter(self):
     pass
@@ -167,6 +168,8 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
   def onApplyButton(self):
     if self.applyButton.text == "Run Shape4D":
       logging.info('Widget: Running Shape4D')
+      self.CLIProgressBar_shape4D.show()
+      self.CLIProgressBar_shape4D.setCommandLineModuleNode(self.Logic.shape4D_cli_node)
       self.applyButton.setText("Cancel")
       self.Logic.parameters.updateShape4DParameters()
       self.Logic.runShape4D()

@@ -331,6 +331,9 @@
     </widget>
    </item>
    <item>
+    <widget class="qSlicerCLIProgressBar" name="CLIProgressBar_shape4D"/>
+   </item>
+   <item>
     <widget class="QPushButton" name="pushButton_RunShape4D">
      <property name="text">
       <string>Run Shape4D</string>
@@ -358,6 +361,11 @@
    <extends>QWidget</extends>
    <header>qMRMLWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qSlicerCLIProgressBar</class>
+   <extends>QWidget</extends>
+   <header>qSlicerCLIProgressBar.h</header>
   </customwidget>
   <customwidget>
    <class>ctkCollapsibleButton</class>
