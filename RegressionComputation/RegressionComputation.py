@@ -65,32 +65,33 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     # Global variables of the Interface
     # Input Shapes
     self.CollapsibleButton_RegressionComputationInput = self.getWidget('CollapsibleButton_RegressionComputationInput')
-    self.PathLineEdit_RegressionComputationInput = self.getWidget('PathLineEdit_RegressionComputationInput')
+    self.shapeInputDirectory = self.getWidget('DirectoryButton_ShapeInput')
+    self.tableWidget_inputShapeParameters = self.getWidget('tableWidget_inputShapeParameters')
 
     # Times Parameters
     self.CollapsibleButton_TimeParemeters = self.getWidget('CollapsibleButton_TimeParemeters')
-    self.t0Input = self.getWidget('spinBox_StartingTimePoint')
-    self.tnInput = self.getWidget('spinBox_EndingTimePoint')
-    self.TInput = self.getWidget('spinBox_NumberOfTimepoints')
+    self.t0 = self.getWidget('spinBox_StartingTimePoint')
+    self.tn = self.getWidget('spinBox_EndingTimePoint')
+    self.T = self.getWidget('spinBox_NumberOfTimepoints')
 
     # Deformation Parameters
     self.CollapsibleButton_DeformationParameters = self.getWidget('CollapsibleButton_DeformationParameters')
-    self.deformationKernelInput = self.getWidget('spinBox_DeformationKernelWidh')
-    self.kernelTypeInput = self.getWidget('ComboBox_KernelType')
-    self.regularityInput = self.getWidget('doubleSpinBox_RegularityWeight')
+    self.defKernelWidth = self.getWidget('spinBox_DeformationKernelWidh')
+    self.kernelType = self.getWidget('ComboBox_KernelType')
+    self.regularityWeight = self.getWidget('doubleSpinBox_RegularityWeight')
 
     # Output Parameters
     self.CollapsibleButton_OutputParameters = self.getWidget('CollapsibleButton_OutputParameters')
     self.outputDirectory = self.getWidget('DirectoryButton_OutputDirectory')
-    self.outputRootnameInput = self.getWidget('lineEdit_OutputRootname')
-    self.saveTempInput = self.getWidget('spinBox_SaveEveryNIterations')
+    self.outputPrefix = self.getWidget('lineEdit_OutputRootname')
+    self.saveEveryN = self.getWidget('spinBox_SaveEveryNIterations')
 
     # Optional Parameters
     self.CollapsibleButton_OptionalParameters = self.getWidget('CollapsibleButton_OptionalParameters')
-    self.estimateBaselineCheckBox = self.getWidget('checkBox_EstimateBaselineShape')
-    self.optimizationMethodInput = self.getWidget('ComboBox_OptimizationMethod')
-    self.breakRatioInput = self.getWidget('doubleSpinBox_BreakRatio')
-    self.maxItersInput = self.getWidget('spinBox_MaxIterations')
+    self.estimateBaseline = self.getWidget('checkBox_EstimateBaselineShape')
+    self.optimMethod = self.getWidget('ComboBox_OptimizationMethod')
+    self.breakRatio = self.getWidget('doubleSpinBox_BreakRatio')
+    self.maxIters = self.getWidget('spinBox_MaxIterations')
 
     # Run Shape4D
     self.applyButton = self.getWidget('pushButton_RunShape4D')
@@ -100,6 +101,8 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.CollapsibleButton_RegressionComputationInput.connect('clicked()',
                                                         lambda: self.onSelectedCollapsibleButtonOpen(
                                                           self.CollapsibleButton_RegressionComputationInput))
+    self.shapeInputDirectory.connect('directoryChanged(const QString &)', self.onInputShapesDirectoryChanged)
+
     self.CollapsibleButton_TimeParemeters.connect('clicked()',
                                                         lambda: self.onSelectedCollapsibleButtonOpen(
                                                           self.CollapsibleButton_TimeParemeters))
@@ -119,7 +122,19 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     slicer.mrmlScene.AddObserver(slicer.mrmlScene.EndCloseEvent, self.onCloseScene)
 
     # Widget Configuration
-    #   Progress Bar of Shape4D CLI
+    #   Input Parameters Table Configuration
+    self.tableWidget_inputShapeParameters.setColumnCount(5)
+    self.tableWidget_inputShapeParameters.setHorizontalHeaderLabels([' Input Shapes ', ' Time Point ', ' Sigma W ', ' Tris ', ' Weight '])
+    self.tableWidget_inputShapeParameters.setColumnWidth(0, 400)
+    horizontalHeader = self.tableWidget_inputShapeParameters.horizontalHeader()
+    horizontalHeader.setStretchLastSection(False)
+    horizontalHeader.setResizeMode(0, qt.QHeaderView.Stretch)
+    horizontalHeader.setResizeMode(1, qt.QHeaderView.ResizeToContents)
+    horizontalHeader.setResizeMode(2, qt.QHeaderView.ResizeToContents)
+    horizontalHeader.setResizeMode(3, qt.QHeaderView.ResizeToContents)
+    horizontalHeader.setResizeMode(4, qt.QHeaderView.ResizeToContents)
+
+    #   Shape4D CLI Progress Bar Configuration
     self.CLIProgressBar_shape4D.hide()
 
   def enter(self):
@@ -165,13 +180,39 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     messageBox.setStandardButtons(messageBox.Ok)
     messageBox.exec_()
 
+  def onInputShapesDirectoryChanged(self):
+    inputShapesDirectory = self.shapeInputDirectory.directory.encode('utf-8')
+    row = 0
+    for file in os.listdir(inputShapesDirectory):
+        if file.endswith(".vtk"):
+          self.tableWidget_inputShapeParameters.setRowCount(row + 1)
+
+          # Column 0:
+          rootname = os.path.basename(file).split(".")[0]
+          labelVTKFile = qt.QLabel(rootname)
+          labelVTKFile.setAlignment(0x84)
+          self.tableWidget_inputShapeParameters.setCellWidget(row, 0, labelVTKFile)
+
+          # Column 1-2-3-4:
+          for i in range(1,5):
+            widget = qt.QWidget()
+            layout = qt.QHBoxLayout(widget)
+            spinBox = qt.QSpinBox()
+            spinBox.setMinimum(0)
+            layout.addWidget(spinBox)
+            layout.setAlignment(0x84)
+            layout.setContentsMargins(0, 0, 0, 0)
+            widget.setLayout(layout)
+            self.tableWidget_inputShapeParameters.setCellWidget(row, i, widget)
+
+          row = row + 1
+
   def onApplyButton(self):
     if self.applyButton.text == "Run Shape4D":
       logging.info('Widget: Running Shape4D')
       self.CLIProgressBar_shape4D.show()
       self.CLIProgressBar_shape4D.setCommandLineModuleNode(self.Logic.shape4D_cli_node)
       self.applyButton.setText("Cancel")
-      self.Logic.parameters.updateShape4DParameters()
       self.Logic.runShape4D()
     else:
       logging.info('Cancel Shape4D')
@@ -190,7 +231,6 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     VTKObservationMixin.__init__(self)
 
     self.interface = interface
-    self.parameters = RegressionComputationParameters(interface)
     self.StatusModifiedEvent = slicer.vtkMRMLCommandLineModuleNode().StatusModifiedEvent
     self.shape4D_module = slicer.modules.shape4d
     self.shape4D_cli_node = slicer.cli.createNode(self.shape4D_module)
@@ -214,11 +254,14 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     print "Write XML driver file"
 
     useFista = False
-    if (self.parameters.optimMethod == "FISTA"):
+    if (self.interface.optimMethod.currentText == "FISTA"):
       useFista = True
 
+    # Write CSV file containing the parameters for each shapes
+    self.pathToCSV = self.writeCSVInputshapesparameters()
+
     # Read CSV file containing the parameters for each shapes
-    self.readCSVFile(self.parameters.pathToCSV)
+    self.readCSVFile(self.pathToCSV)
 
     # Write XML file
     fileContents = ""
@@ -231,12 +274,12 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     fileContents += "      <input>\n"
     fileContents += "        <shape> " + self.shapePaths[0] + " </shape>\n"
     fileContents += "      </input>\n"
-    fileContents += "      <sigmaV> " + str(self.parameters.defKernelWidth) + " </sigmaV>\n"
-    fileContents += "      <gammaR> " + str(self.parameters.regularityWeight) + " </gammaR>\n"
-    fileContents += "      <t0> " + str(self.parameters.t0) + " </t0>\n"
-    fileContents += "      <tn> " + str(self.parameters.tn) + " </tn>\n"
-    fileContents += "      <T> " + str(self.parameters.T) + " </T>\n"
-    fileContents += "      <kernelType> " + self.parameters.kernelType + " </kernelType>\n"
+    fileContents += "      <sigmaV> " + str(self.interface.defKernelWidth.value) + " </sigmaV>\n"
+    fileContents += "      <gammaR> " + str(self.interface.regularityWeight.value) + " </gammaR>\n"
+    fileContents += "      <t0> " + str(self.interface.t0.value) + " </t0>\n"
+    fileContents += "      <tn> " + str(self.interface.tn.value) + " </tn>\n"
+    fileContents += "      <T> " + str(self.interface.T.value) + " </T>\n"
+    fileContents += "      <kernelType> " + self.interface.kernelType.currentText + " </kernelType>\n"
     fileContents += "      <estimateBaseline> 0 </estimateBaseline>\n"
     fileContents += "      <useFista> 0 </useFista>\n"
     fileContents += "      <maxIters> 250 </maxIters>\n"
@@ -259,22 +302,22 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     fileContents += "      <input>\n"
     fileContents += "        <shape> " + self.shapePaths[0] + " </shape>\n"
     fileContents += "      </input>\n"
-    fileContents += "      <sigmaV> " + str(self.parameters.defKernelWidth) + " </sigmaV>\n"
-    fileContents += "      <gammaR> " + str(self.parameters.regularityWeight) + " </gammaR>\n"
-    fileContents += "      <t0> " + str(self.parameters.t0) + " </t0>\n"
-    fileContents += "      <tn> " + str(self.parameters.tn) + " </tn>\n"
-    fileContents += "      <T> " + str(self.parameters.T) + " </T>\n"
-    fileContents += "      <kernelType> " + self.parameters.kernelType + " </kernelType>\n"
+    fileContents += "      <sigmaV> " + str(self.interface.defKernelWidth.value) + " </sigmaV>\n"
+    fileContents += "      <gammaR> " + str(self.interface.regularityWeight.value) + " </gammaR>\n"
+    fileContents += "      <t0> " + str(self.interface.t0.value) + " </t0>\n"
+    fileContents += "      <tn> " + str(self.interface.tn.value) + " </tn>\n"
+    fileContents += "      <T> " + str(self.interface.T.value) + " </T>\n"
+    fileContents += "      <kernelType> " + self.interface.kernelType.currentText + " </kernelType>\n"
     fileContents += "      <useInitV0> 1 </useInitV0>\n"
     fileContents += "      <v0weight> 1 </v0weight>\n"
-    fileContents += "      <estimateBaseline> " + str(int(self.parameters.estimateBaseline)) + " </estimateBaseline>\n"
+    fileContents += "      <estimateBaseline> " + str(int(self.interface.estimateBaseline.checkState())) + " </estimateBaseline>\n"
     fileContents += "      <useFista> " + str(int(useFista)) + " </useFista>\n"
-    fileContents += "      <maxIters> " + str(self.parameters.maxIters) + " </maxIters>\n"
-    fileContents += "      <breakRatio> " + str(self.parameters.breakRatio) + " </breakRatio>\n"
+    fileContents += "      <maxIters> " + str(self.interface.maxIters.value) + " </maxIters>\n"
+    fileContents += "      <breakRatio> " + str(self.interface.breakRatio.value) + " </breakRatio>\n"
     fileContents += "      <output>\n"
-    fileContents += "        <saveProgress> " + str(self.parameters.saveEveryN) + " </saveProgress>\n"
-    fileContents += "        <dir> " + self.parameters.outputDir + "/ </dir>\n"
-    fileContents += "        <prefix> " + self.parameters.outputPrefix + " </prefix>\n"
+    fileContents += "        <saveProgress> " + str(self.interface.saveEveryN.value) + " </saveProgress>\n"
+    fileContents += "        <dir> " + self.interface.outputDirectory.directory.encode('utf-8') + "/ </dir>\n"
+    fileContents += "        <prefix> " + self.interface.outputPrefix.text + " </prefix>\n"
     fileContents += "      </output>\n"
     fileContents += "    </source>\n"
     fileContents += "    <targets>\n"
@@ -294,11 +337,36 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     fileContents += "  </algorithm>\n"
     fileContents += "</experiment>\n"
 
-    XMLdriverfilepath = os.path.join(self.parameters.outputDir, "driver.xml")
+    XMLdriverfilepath = os.path.join(self.interface.outputDirectory.directory.encode('utf-8'), "driver.xml")
     f = open(XMLdriverfilepath, 'w')
     f.write(fileContents)
     f.close()
     return XMLdriverfilepath
+
+  def writeCSVInputshapesparameters(self):
+    inputShapesDirectory = self.interface.shapeInputDirectory.directory.encode('utf-8')
+    outputDirectory = self.interface.outputDirectory.directory.encode('utf-8')
+
+    CSVInputshapesparametersfilepath = os.path.join(outputDirectory, "CVSInputshapesparameters.csv")
+    print CSVInputshapesparametersfilepath
+    print outputDirectory
+    file = open(CSVInputshapesparametersfilepath, 'w')
+    cw = csv.writer(file, delimiter=',')
+    table = self.interface.tableWidget_inputShapeParameters
+    for row in range(0, table.rowCount):
+      listcsv = []
+      inputshaperootname = table.cellWidget(row, 0)
+      inputshapefilepath = inputShapesDirectory + "/" + inputshaperootname.text + ".vtk"
+      listcsv.append(inputshapefilepath)
+      for column in range(1, 5):
+        widget = table.cellWidget(row, column)
+        tuple = widget.children()
+        spinbox = tuple[1]
+        listcsv.append(spinbox.value)
+      cw.writerow(listcsv)
+    file.close()
+
+    return CSVInputshapesparametersfilepath
 
   def readCSVFile(self, pathToCSV):
 
@@ -350,54 +418,7 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
                                 'RegressionComputation',
                                 self.ErrorMessage)
 
-
-#
-# RegressionComputationParameters
-#
-class RegressionComputationParameters(object):
-  def __init__(self, interface):
-    self.interface = interface
-
-    # Parameters by default
-
-    self.pathToCSV = " "
-
-    self.t0 = 0
-    self.tn = 0
-    self.T = 0
-
-    self.defKernelWidth = 0
-    self.kernelType = "exact"
-    self.regularityWeight = 0
-
-    self.outputDir = " "
-    self.outputPrefix = " "
-    self.saveEveryN = 0
-
-    self.estimateBaseline = False
-    self.optimMethod = "FISTA"
-    self.breakRatio = 0
-    self.maxIters = 0
-
-  def updateShape4DParameters(self):
-    self.pathToCSV = self.interface.PathLineEdit_RegressionComputationInput.currentPath
-
-    self.t0 = self.interface.t0Input.value
-    self.tn = self.interface.tnInput.value
-    self.T = self.interface.TInput.value
-
-    self.defKernelWidth = self.interface.deformationKernelInput.value
-    self.kernelType = self.interface.kernelTypeInput.currentText
-    self.regularityWeight = self.interface.regularityInput.value
-
-    self.outputDir = self.interface.outputDirectory.directory.encode('utf-8')
-    self.outputPrefix = self.interface.outputRootnameInput.text
-    self.saveEveryN = self.interface.saveTempInput.value
-
-    self.estimateBaseline = self.interface.estimateBaselineCheckBox.isChecked()
-    self.optimMethod = self.interface.optimizationMethodInput.currentText
-    self.breakRatio = self.interface.breakRatioInput.value
-    self.maxIters = self.interface.maxItersInput.value
+        self.interface.applyButton.text = 'Run Shape4D'
 
 
 #
