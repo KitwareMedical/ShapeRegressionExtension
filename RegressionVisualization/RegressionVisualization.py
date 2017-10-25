@@ -71,9 +71,16 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     #   Shape Regression Input
     self.CollapsibleButton_ShapeRegressionInput = self.getWidget('CollapsibleButton_ShapeRegressionInput')
     self.inputDirectoryButton = self.getWidget('DirectoryButton_ShapeRegressionInputDirectory')
-    self.CollapsibleButton_Sequence = self.getWidget('CollapsibleButton_Sequence')
     self.lineEdit_shapesRootname = self.getWidget('lineEdit_ShapeRegressionInputRootname')
     self.pushbutton_CreationSequence = self.getWidget('pushButton_CreationSequence')
+
+    #   Sequence Visualization Option
+    self.CollapsibleButton_SequenceVisualizationOption = self.getWidget('CollapsibleButton_SequenceVisualizationOption')
+    self.selectionOfmodeldisplayoption = self.getWidget('comboBox_selectionOfmodeldisplayoption')
+    self.widget_coloroption = self.getWidget('widget_coloroption')
+    self.ColorPickerButton_startingColor = self.getWidget('ColorPickerButton_startingColor')
+    self.ColorPickerButton_endingColor = self.getWidget('ColorPickerButton_endingColor')
+    self.CollapsibleGroupBox_SequenceBrowser = self.getWidget('CollapsibleGroupBox_SequenceBrowser')
 
     # Connect Functions
     self.CollapsibleButton_ShapeRegressionInput.connect('clicked()',
@@ -81,23 +88,24 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
                                                     self.CollapsibleButton_ShapeRegressionInput))
     self.pushbutton_CreationSequence.connect('clicked()', self.onSequenceCreation)
 
-    self.CollapsibleButton_Sequence.connect('clicked()',
+    self.CollapsibleButton_SequenceVisualizationOption.connect('clicked()',
                                                   lambda: self.onSelectedCollapsibleButtonOpen(
-                                                    self.CollapsibleButton_Sequence))
+                                                    self.CollapsibleButton_SequenceVisualizationOption))
 
+    self.selectionOfmodeldisplayoption.connect('currentIndexChanged(int)', self.onUpdateSequence)
+    self.ColorPickerButton_startingColor.connect('clicked()', self.onUpdateColorSequence)
+    self.ColorPickerButton_endingColor.connect('clicked()', self.onUpdateColorSequence)
 
     slicer.mrmlScene.AddObserver(slicer.mrmlScene.EndCloseEvent, self.onCloseScene)
 
     # Widget Configuration
     #     Sequence Browser Play Widget Configuration
     self.sequenceBrowserPlayWidget = slicer.qMRMLSequenceBrowserPlayWidget()
-    self.CollapsibleButton_Sequence.layout().addWidget(self.sequenceBrowserPlayWidget)
-    self.sequenceBrowserPlayWidget.enabled = False
+    self.CollapsibleGroupBox_SequenceBrowser.layout().addWidget(self.sequenceBrowserPlayWidget)
 
     ## Sequence Browser Seek Widget Configuration
     self.sequenceBrowserSeekWidget = slicer.qMRMLSequenceBrowserSeekWidget()
-    self.CollapsibleButton_Sequence.layout().addWidget(self.sequenceBrowserSeekWidget)
-    self.sequenceBrowserSeekWidget.enabled = False
+    self.CollapsibleGroupBox_SequenceBrowser.layout().addWidget(self.sequenceBrowserSeekWidget)
 
     ##
     self.modelsequence = slicer.mrmlScene.AddNode(slicer.vtkMRMLSequenceNode())
@@ -130,7 +138,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
   def onSelectedCollapsibleButtonOpen(self, selectedCollapsibleButton):
     if selectedCollapsibleButton.isChecked():
       collapsibleButtonList = [self.CollapsibleButton_ShapeRegressionInput,
-                               self.CollapsibleButton_Sequence]
+                               self.CollapsibleButton_SequenceVisualizationOption]
       for collapsibleButton in collapsibleButtonList:
         collapsibleButton.setChecked(False)
       selectedCollapsibleButton.setChecked(True)
@@ -166,9 +174,8 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       self.warningMessage(warningMessagetext, None)
       return
 
-    # Enable the sequence Browser Play Widget GUI
-    self.sequenceBrowserPlayWidget.enabled = True
-    self.sequenceBrowserSeekWidget.enabled = True
+    # Enable the sequence visualization tab
+    self.CollapsibleButton_SequenceVisualizationOption.enabled = True
 
     # Load the models in Slicer
     self.loadModels()
@@ -192,11 +199,23 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
   def loadModels(self):
     inputDirectory = self.inputDirectoryButton.directory.encode('utf-8')
 
+    colormapsInCommon = []
     for number, shapeBasename in self.InputShapes.items():
       shapeRootname = shapeBasename.split(".vtk")[0]
       model = MRMLUtility.loadMRMLNode(shapeRootname, inputDirectory, shapeBasename, 'ModelFile')
       self.RegressionModels[number] = model
 
+      numOfArray = model.GetPolyData().GetPointData().GetNumberOfArrays()
+      colormapslist = []
+      for i in range(0, numOfArray):
+        if len(self.RegressionModels) == 1:
+          colormapsInCommon.append(model.GetPolyData().GetPointData().GetArray(i).GetName())
+        colormapslist.append(model.GetPolyData().GetPointData().GetArray(i).GetName())
+
+      colormapsInCommon = set(colormapslist) & set(colormapsInCommon)
+
+    for colormapInCommon in colormapsInCommon:
+      self.selectionOfmodeldisplayoption.addItem(colormapInCommon)
 
   def sequenceCreation(self):
     print "Sequence Creation"
@@ -209,8 +228,14 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
 
       # Adding of the model display nodes to the model display node sequence
       modeldisplay = slicer.mrmlScene.AddNode(slicer.vtkMRMLModelDisplayNode())
-      color = float(number / float(len(self.InputShapes)))
-      modeldisplay.SetColor(1, 0, color)
+
+      startingColor = self.ColorPickerButton_startingColor.color
+      endingColor = self.ColorPickerButton_endingColor.color
+      red = float((startingColor.red() + float((number * (endingColor.red() - startingColor.red()) ) / float(len(self.InputShapes))))/255)
+      green = float((startingColor.green() + float((number * (endingColor.green() - startingColor.green()) ) / float(len(self.InputShapes))))/255)
+      blue = float((startingColor.blue() + float((number * (endingColor.blue() - startingColor.blue()) ) / float(len(self.InputShapes))))/255)
+      modeldisplay.SetColor(red, green, blue)
+
       slicer.mrmlScene.RemoveNode(modeldisplay)
       self.displaynodesequence.SetDataNodeAtValue(modeldisplay, str(number))
 
@@ -228,7 +253,55 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     # Set the sequence browser for the sequence browser seek widget
     self.sequenceBrowserSeekWidget.setMRMLSequenceBrowserNode(self.sequencebrowser)
     self.sequenceBrowserPlayWidget.setMRMLSequenceBrowserNode(self.sequencebrowser)
-    self.sequencebrowser.SetRecording(self.modelsequence, True);
+    self.sequencebrowser.SetRecording(self.modelsequence, True)
+
+  def onUpdateSequence(self):
+    if self.selectionOfmodeldisplayoption.currentText == "Color":
+      self.widget_coloroption.show()
+      self.onUpdateColorSequence()
+    else:
+      self.widget_coloroption.hide()
+      self.UpdateColorMapSequence()
+
+  def onUpdateColorSequence(self):
+    # Update the color of the model contained in the sequence
+    self.sequencebrowser.RemoveSynchronizedSequenceNode(self.displaynodesequence.GetID())
+    for number, model in self.RegressionModels.items():
+      modeldisplay = slicer.mrmlScene.AddNode(slicer.vtkMRMLModelDisplayNode())
+
+      startingColor = self.ColorPickerButton_startingColor.color
+      endingColor = self.ColorPickerButton_endingColor.color
+      red = float((startingColor.red() + float((number * (endingColor.red() - startingColor.red()) ) / float(len(self.InputShapes))))/255)
+      green = float((startingColor.green() + float((number * (endingColor.green() - startingColor.green()) ) / float(len(self.InputShapes))))/255)
+      blue = float((startingColor.blue() + float((number * (endingColor.blue() - startingColor.blue()) ) / float(len(self.InputShapes))))/255)
+      modeldisplay.SetColor(red, green, blue)
+      slicer.mrmlScene.RemoveNode(modeldisplay)
+      self.displaynodesequence.SetDataNodeAtValue(modeldisplay, str(number))
+
+    self.sequencebrowser.AddSynchronizedSequenceNodeID(self.displaynodesequence.GetID())
+
+    # Replace display node that is previously created by the new display proxy node
+    modelProxyNode = self.sequencebrowser.GetProxyNode(self.modelsequence)
+    modelDisplayProxyNode = self.sequencebrowser.GetProxyNode(self.displaynodesequence)
+    slicer.mrmlScene.RemoveNode(modelProxyNode.GetDisplayNode())
+    modelProxyNode.SetAndObserveDisplayNodeID(modelDisplayProxyNode.GetID())
+
+  def UpdateColorMapSequence(self):
+    # Update the color map of the model contained in the sequence
+    self.sequencebrowser.RemoveSynchronizedSequenceNode(self.displaynodesequence.GetID())
+    for number, model in self.RegressionModels.items():
+      modeldisplay = slicer.mrmlScene.AddNode(slicer.vtkMRMLModelDisplayNode())
+      modeldisplay.ScalarVisibilityOn()
+      modeldisplay.SetActiveScalarName(self.selectionOfmodeldisplayoption.currentText)
+      self.displaynodesequence.SetDataNodeAtValue(modeldisplay, str(number))
+
+    self.sequencebrowser.AddSynchronizedSequenceNodeID(self.displaynodesequence.GetID())
+
+    # Replace display node that is previously created by the new display proxy node
+    modelProxyNode = self.sequencebrowser.GetProxyNode(self.modelsequence)
+    modelDisplayProxyNode = self.sequencebrowser.GetProxyNode(self.displaynodesequence)
+    slicer.mrmlScene.RemoveNode(modelProxyNode.GetDisplayNode())
+    modelProxyNode.SetAndObserveDisplayNodeID(modelDisplayProxyNode.GetID())
 
 #
 # RegressionVisualizationLogic
