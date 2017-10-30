@@ -418,7 +418,7 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
                                 'RegressionComputation',
                                 self.ErrorMessage)
 
-        self.interface.applyButton.text = 'Run Shape4D'
+      self.interface.applyButton.text = 'Run Shape4D'
 
 
 #
