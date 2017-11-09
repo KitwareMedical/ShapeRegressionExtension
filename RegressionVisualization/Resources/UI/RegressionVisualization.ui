@@ -19,8 +19,21 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_4">
+   <item row="2" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="0">
     <widget class="ctkCollapsibleButton" name="CollapsibleButton_ShapeRegressionInput">
      <property name="text">
       <string>Shape Regression Inputs</string>
@@ -42,6 +55,9 @@
           <string>Input Directory</string>
          </attribute>
          <layout class="QFormLayout" name="formLayout">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_ShapeRegressionInputInputDirectory">
             <property name="toolTip">
@@ -103,10 +119,10 @@
      </layout>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="ctkCollapsibleButton" name="CollapsibleButton_SequenceVisualizationOption">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="text">
       <string>Sequence Visualization Options</string>
@@ -116,95 +132,348 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QWidget" name="widget_selectionOfmodeldisplayoption" native="true">
-        <layout class="QFormLayout" name="formLayout_3">
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_selectionOfmodeldisplayoption">
-           <property name="text">
-            <string>Selection of the model display option</string>
-           </property>
+       <widget class="QGroupBox" name="groupBox_SequenceColoring">
+        <property name="title">
+         <string>Coloring</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_9">
+         <item>
+          <widget class="QWidget" name="widget_ColorMapChoice" native="true">
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_ColorMapChoice">
+              <property name="text">
+               <string>Color Map:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="comboBox_ColorMapChoice">
+              <item>
+               <property name="text">
+                <string>Solid Color</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QComboBox" name="comboBox_3DColorMapChoice">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <item>
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Magnitude</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>X</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Y</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Z</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_ColorMapSequenceRange">
+              <property name="text">
+               <string>Color Map Range:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineEdit_ColorMapSequenceMin">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QLineEdit" name="lineEdit_ColorMapSequenceMax">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="comboBox_selectionOfmodeldisplayoption">
-           <item>
-            <property name="text">
-             <string>Color</string>
-            </property>
-           </item>
+         <item>
+          <widget class="ctkCollapsibleGroupBox" name="CollapsibleGroupBox_CustomColoring">
+           <property name="title">
+            <string>Custom Coloring</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QStackedWidget" name="stackedWidget_CustomColoring">
+              <property name="currentIndex">
+               <number>1</number>
+              </property>
+              <widget class="QWidget" name="page_ColorMapCustom">
+               <layout class="QVBoxLayout" name="verticalLayout_6">
+                <item>
+                 <widget class="QWidget" name="widget_SequenceRangeColorMap" native="true">
+                  <layout class="QGridLayout" name="gridLayout_2">
+                   <item row="0" column="0">
+                    <widget class="ctkCollapsibleGroupBox" name="CollapsibleGroupBox_CustomColorBar">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="title">
+                      <string>Custom Color Bar</string>
+                     </property>
+                     <property name="checked">
+                      <bool>false</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout">
+                      <item>
+                       <widget class="QWidget" name="widget_CustomColorMapRange" native="true">
+                        <layout class="QHBoxLayout" name="horizontalLayout_2">
+                         <item>
+                          <widget class="QLabel" name="label_ColorSequenceRange">
+                           <property name="text">
+                            <string>Color Range:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="doubleSpinBox_ColorSequenceMin">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="minimum">
+                            <double>-999999999.000000000000000</double>
+                           </property>
+                           <property name="maximum">
+                            <double>999999999.000000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QDoubleSpinBox" name="doubleSpinBox_ColorSequenceMax">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="minimum">
+                            <double>-999999999.000000000000000</double>
+                           </property>
+                           <property name="maximum">
+                            <double>999999999.000000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QPushButton" name="pushButton_ResetColorSequenceRange">
+                           <property name="enabled">
+                            <bool>true</bool>
+                           </property>
+                           <property name="text">
+                            <string>Reset</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="ctkVTKScalarsToColorsWidget" name="ScalarsToColorsWidget">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>120</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="ctkCollapsibleGroupBox" name="CollapsibleGroupBox_CustomScalarBar">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="title">
+                      <string>Custom Scalar Bar</string>
+                     </property>
+                     <property name="checked">
+                      <bool>false</bool>
+                     </property>
+                     <layout class="QFormLayout" name="formLayout_3">
+                      <property name="fieldGrowthPolicy">
+                       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+                      </property>
+                      <item row="4" column="0">
+                       <widget class="QLabel" name="label_TitleScalarBar">
+                        <property name="text">
+                         <string>Title:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="6" column="0">
+                       <widget class="QLabel" name="label_labelsColorScalarBar">
+                        <property name="text">
+                         <string>Color of Labels: </string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="6" column="1">
+                       <widget class="ctkColorPickerButton" name="ColorPickerButton_LabelsColorScalarBar">
+                        <property name="color">
+                         <color>
+                          <red>255</red>
+                          <green>255</green>
+                          <blue>255</blue>
+                         </color>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="7" column="0">
+                       <widget class="QLabel" name="label_LabelStyleScalarBar">
+                        <property name="text">
+                         <string>Size of Labels: </string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="7" column="1">
+                       <widget class="QWidget" name="widget_LabelStyleScalarBar" native="true">
+                        <layout class="QHBoxLayout" name="horizontalLayout">
+                         <item>
+                          <widget class="QCheckBox" name="checkBox_LabelBoldStyleScalarBar">
+                           <property name="text">
+                            <string>bold</string>
+                           </property>
+                           <property name="checked">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QCheckBox" name="checkBox_LabelItalicStyleScalarBar">
+                           <property name="text">
+                            <string>italic</string>
+                           </property>
+                           <property name="checked">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QCheckBox" name="checkBox_LabelShadowStyleScalarBar">
+                           <property name="text">
+                            <string>shadow</string>
+                           </property>
+                           <property name="checked">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item row="4" column="1">
+                       <widget class="QLineEdit" name="lineEdit_TitleScalarBar"/>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QCheckBox" name="checkBox_DisplayScalarBar">
+                        <property name="text">
+                         <string/>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_DisplayScalarBar">
+                        <property name="text">
+                         <string>Display Scalar Bar:</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="page_SolidColorCustom">
+               <layout class="QVBoxLayout" name="verticalLayout_7">
+                <item>
+                 <widget class="QWidget" name="widget_SolidColorOption" native="true">
+                  <layout class="QGridLayout" name="gridLayout">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_startingColor">
+                     <property name="text">
+                      <string>Starting Color</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="ctkColorPickerButton" name="ColorPickerButton_startingColor">
+                     <property name="color">
+                      <color>
+                       <red>255</red>
+                       <green>255</green>
+                       <blue>0</blue>
+                      </color>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_endingColor">
+                     <property name="text">
+                      <string>Ending Color</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="ctkColorPickerButton" name="ColorPickerButton_endingColor">
+                     <property name="color">
+                      <color>
+                       <red>255</red>
+                       <green>0</green>
+                       <blue>0</blue>
+                      </color>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_coloroption" native="true">
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_startingColor">
-           <property name="text">
-            <string>Starting Color</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="ctkColorPickerButton" name="ColorPickerButton_startingColor">
-           <property name="color">
-            <color>
-             <red>255</red>
-             <green>255</green>
-             <blue>0</blue>
-            </color>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_endingColor">
-           <property name="text">
-            <string>Ending Color</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="ctkColorPickerButton" name="ColorPickerButton_endingColor">
-           <property name="color">
-            <color>
-             <red>255</red>
-             <green>0</green>
-             <blue>0</blue>
-            </color>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="ctkCollapsibleGroupBox" name="CollapsibleGroupBox_SequenceBrowser">
+       <widget class="QGroupBox" name="groupBox_SequenceBrowser">
         <property name="title">
          <string>Sequence Browser</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4"/>
+        <layout class="QVBoxLayout" name="verticalLayout_8"/>
        </widget>
       </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>
@@ -214,6 +483,11 @@
    <extends>QWidget</extends>
    <header>qMRMLWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkVTKScalarsToColorsWidget</class>
+   <extends>QWidget</extends>
+   <header>ctkVTKScalarsToColorsWidget.h</header>
   </customwidget>
   <customwidget>
    <class>ctkCollapsibleButton</class>
