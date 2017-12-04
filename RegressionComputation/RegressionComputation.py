@@ -263,11 +263,20 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     # Read CSV file containing the parameters for each shapes
     self.readCSVFile(self.pathToCSV)
 
+    if sys.platform == 'win32':
+      experimentName = "/ShapeRegression"
+      outputDir = self.interface.outputDirectory.directory.encode('utf-8')
+      prefix = "/" + self.interface.outputPrefix.text
+    else:
+      experimentName = "ShapeRegression/"
+      outputDir = self.interface.outputDirectory.directory.encode('utf-8') + "/"
+      prefix = self.interface.outputPrefix.text
+
     # Write XML file
     fileContents = ""
 
     fileContents += "<?xml version=\"1.0\">\n"
-    fileContents += "<experiment name=\"ShapeRegression\">\n"
+    fileContents += "<experiment name=\"" + experimentName + "\">\n"
 
     fileContents += "  <algorithm name=\"RegressionVelocity\">\n"
     fileContents += "    <source>\n"
@@ -316,8 +325,8 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     fileContents += "      <breakRatio> " + str(self.interface.breakRatio.value) + " </breakRatio>\n"
     fileContents += "      <output>\n"
     fileContents += "        <saveProgress> " + str(self.interface.saveEveryN.value) + " </saveProgress>\n"
-    fileContents += "        <dir> " + self.interface.outputDirectory.directory.encode('utf-8') + "/ </dir>\n"
-    fileContents += "        <prefix> " + self.interface.outputPrefix.text + " </prefix>\n"
+    fileContents += "        <dir> " + outputDir + " </dir>\n"
+    fileContents += "        <prefix> " + prefix + " </prefix>\n"
     fileContents += "      </output>\n"
     fileContents += "    </source>\n"
     fileContents += "    <targets>\n"
