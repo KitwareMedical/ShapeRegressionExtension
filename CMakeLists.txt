@@ -58,7 +58,7 @@ add_subdirectory(RegressionVisualization)
 
 set(shape4D_LIB_DIR ${EXTENSION_SUPERBUILD_BINARY_DIR}/shape4D-build/shape4D-build/${Slicer_CLIMODULES_LIB_DIR})
 if(WIN32)
-  set(DIRECTORY_shape4D ${shape4D_LIB_DIR}/${CMAKE_CONFIGURATION_TYPES}/.)
+  set(DIRECTORY_shape4D ${shape4D_LIB_DIR}/$<CONFIG>/.)
 else()
   set(DIRECTORY_shape4D ${shape4D_LIB_DIR}/.)
 endif()
