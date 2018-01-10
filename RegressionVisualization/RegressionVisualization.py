@@ -136,6 +136,11 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.ColorPickerButton_endingColor = self.getWidget('ColorPickerButton_endingColor')
     self.groupBox_SequenceBrowser = self.getWidget('groupBox_SequenceBrowser')
 
+    #   Regression's Plot
+    self.CollapsibleButton_ReressionPlot = self.getWidget('CollapsibleButton_ReressionPlot')
+    self.PathLineEdit_RegressionInputShapesCSV = self.getWidget('PathLineEdit_RegressionInputShapesCSV')
+    self.pushButton_RegressionPlot = self.getWidget('pushButton_RegressionPlot')
+
     # Connect Functions
     self.CollapsibleButton_ShapeRegressionInput.connect('clicked()',
                                                   lambda: self.onSelectedCollapsibleButtonOpen(
@@ -159,6 +164,11 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.checkBox_LabelItalicStyleScalarBar.connect('clicked(bool)', self.onUpdateLabelsStyleScalarBar)
     self.ColorPickerButton_startingColor.connect('clicked()', self.onUpdateSequenceSolidColor)
     self.ColorPickerButton_endingColor.connect('clicked()', self.onUpdateSequenceSolidColor)
+
+    self.CollapsibleButton_ReressionPlot.connect('clicked()',
+                                                  lambda: self.onSelectedCollapsibleButtonOpen(
+                                                    self.CollapsibleButton_ReressionPlot))
+    self.pushButton_RegressionPlot.connect('clicked()', self.onRegressionPlot)
 
     slicer.mrmlScene.AddObserver(slicer.mrmlScene.EndCloseEvent, self.onCloseScene)
 
@@ -202,7 +212,8 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
   def onSelectedCollapsibleButtonOpen(self, selectedCollapsibleButton):
     if selectedCollapsibleButton.isChecked():
       collapsibleButtonList = [self.CollapsibleButton_ShapeRegressionInput,
-                               self.CollapsibleButton_SequenceVisualizationOption]
+                               self.CollapsibleButton_SequenceVisualizationOption,
+                               self.CollapsibleButton_ReressionPlot]
       for collapsibleButton in collapsibleButtonList:
         collapsibleButton.setChecked(False)
       selectedCollapsibleButton.setChecked(True)
@@ -640,6 +651,150 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     LabelsItalicCheckBox.setCheckState(self.checkBox_LabelItalicStyleScalarBar.checkState())
     LabelsShadowCheckBox.setCheckState(self.checkBox_LabelShadowStyleScalarBar.checkState())
 
+
+  ### Regression Plot
+  def onRegressionPlot(self):
+
+    # Set a Plot Layout
+    layoutNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLLayoutNode")
+    if layoutNode == False:
+      print " Unable to get layout node!"
+      pass
+    viewArray = layoutNode.GetViewArrangement()
+    if not viewArray == slicer.vtkMRMLLayoutNode.SlicerLayoutConventionalPlotView \
+            and not viewArray == slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpPlotView \
+            and not viewArray == slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpPlotTableView \
+            and not viewArray == slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpPlotView \
+            and not viewArray == slicer.vtkMRMLLayoutNode.SlicerLayoutThreeOverThreePlotView:
+      layoutNode.SetViewArrangement(slicer.vtkMRMLLayoutNode.SlicerLayoutConventionalPlotView)
+
+    # Create a PlotChart node
+    plotChartNode = MRMLUtility.createNewMRMLNode("plotChartNode", slicer.vtkMRMLPlotChartNode())
+
+    # Remove columns / plots not selected from plotChartNode
+    plotChartNode.RemoveAllPlotDataNodeIDs()
+
+    # Creation of data for the plot
+    table1 = vtk.vtkTable()
+    table2 = vtk.vtkTable()
+
+    # Fill the tables for
+    # - the Shape Input used for the computation of the 4D regression in the RegressionComputation module
+    # - the Shape Regression computed in the RegressionComputation module
+    arrShapeRegressionAges = vtk.vtkFloatArray()
+    arrShapeRegressionAges.SetName("Ages Shape Regression")
+    table1.AddColumn(arrShapeRegressionAges)
+
+    arrShapeRegression = vtk.vtkFloatArray()
+    arrShapeRegression.SetName("Shape Regression")
+    table1.AddColumn(arrShapeRegression)
+
+    arrShapeInputAges = vtk.vtkFloatArray()
+    arrShapeInputAges.SetName("Ages Shape Input")
+    table2.AddColumn(arrShapeInputAges)
+
+    arrShapeInput = vtk.vtkFloatArray()
+    arrShapeInput.SetName("Shape Input")
+    table2.AddColumn(arrShapeInput)
+
+    ShapeRegressionNumPoints = len(self.RegressionModels)
+    table1.SetNumberOfRows(ShapeRegressionNumPoints)
+
+    if not os.path.exists(self.PathLineEdit_RegressionInputShapesCSV.currentPath):
+      messageText = "Set up a CSV input file"
+      messageInformation = "The CSV file need to contain: \n" \
+                           "- in the First column: the relative paths for each shape input used during the regression\n" \
+                           "- in the Second column: the age associated to the shape inputs"
+      self.warningMessage(messageText, messageInformation)
+      return
+
+    shapePaths, timepts = self.Logic.readCSVFile(self.PathLineEdit_RegressionInputShapesCSV.currentPath)
+    ShapeInputNumPoints = len(shapePaths)
+    table2.SetNumberOfRows(ShapeInputNumPoints)
+
+    # Find the minimum and the maximum of the ages
+    ageMin, ageMax = self.Logic.findAgeRange(timepts)
+
+    for i in range(len(shapePaths)):
+      # Age of the shape input
+      table2.SetValue(i, 0, timepts[i])
+
+      # Compute of the volume of each shape input
+      shapePaths_dir = os.path.split(shapePaths[i])[0]
+      shapePaths_rootname = os.path.split(shapePaths[i])[1].split(".")[0]
+      shapePaths_filename = os.path.split(shapePaths[i])[1]
+      model = MRMLUtility.loadMRMLNode(shapePaths_rootname, shapePaths_dir, shapePaths_filename, 'ModelFile')
+      polydata = model.GetPolyData()
+      triangleFilter = vtk.vtkTriangleFilter()
+      triangleFilter.SetInputData(polydata)
+      triangleFilter.Update()
+
+      massProps = vtk.vtkMassProperties()
+      massProps.SetInputData(triangleFilter.GetOutput())
+      massProps.Update()
+      volume = massProps.GetVolume()
+      table2.SetValue(i, 1, volume)
+
+      MRMLUtility.removeMRMLNode(model)
+
+    for j in range(ShapeRegressionNumPoints):
+
+      # Age of the regression shapes
+      age = ageMin + j * ((ageMax - ageMin) / float(ShapeRegressionNumPoints - 1))
+      table1.SetValue(j, 0, age)
+
+      # Compute of the volume of each regression shapes
+      model = self.RegressionModels[j]
+      polydata = model.GetPolyData()
+      triangleFilter = vtk.vtkTriangleFilter()
+      triangleFilter.SetInputData(polydata)
+      triangleFilter.Update()
+
+      massProps = vtk.vtkMassProperties()
+      massProps.SetInputData(triangleFilter.GetOutput())
+      massProps.Update()
+      volume = massProps.GetVolume()
+      table1.SetValue(j, 1, volume)
+
+    # Create a MRMLTableNode
+    tableNode1 = MRMLUtility.createNewMRMLNode("tableNode", slicer.vtkMRMLTableNode())
+    tableNode1.SetAndObserveTable(table1)
+    tableNode2 = MRMLUtility.createNewMRMLNode("tableNode", slicer.vtkMRMLTableNode())
+    tableNode2.SetAndObserveTable(table2)
+
+    # Create two PlotDataNodes
+    ShapeRegressionPlotDataNode = MRMLUtility.createNewMRMLNode("ShapeRegressionPlotDataNode", slicer.vtkMRMLPlotDataNode())
+    ShapeInputPlotDataNode = MRMLUtility.createNewMRMLNode("ShapeInputPlotDataNode", slicer.vtkMRMLPlotDataNode())
+
+    # Set and Observe the MRMLTableNodeID
+    ShapeRegressionPlotDataNode.SetName(arrShapeRegression.GetName())
+    ShapeRegressionPlotDataNode.SetYColumnName("Shape Volumes")
+    ShapeRegressionPlotDataNode.SetAndObserveTableNodeID(tableNode1.GetID())
+    ShapeRegressionPlotDataNode.SetXColumnName(tableNode1.GetColumnName(0))
+    ShapeRegressionPlotDataNode.SetYColumnName(tableNode1.GetColumnName(1))
+    ShapeInputPlotDataNode.SetName(arrShapeInput.GetName())
+    ShapeInputPlotDataNode.SetYColumnName("Shape Volumes")
+    ShapeInputPlotDataNode.SetAndObserveTableNodeID(tableNode2.GetID())
+    ShapeInputPlotDataNode.SetXColumnName(tableNode2.GetColumnName(0))
+    ShapeInputPlotDataNode.SetYColumnName(tableNode2.GetColumnName(1))
+
+    # Add and Observe plots IDs in PlotChart
+    plotChartNode.AddAndObservePlotDataNodeID(ShapeRegressionPlotDataNode.GetID())
+    plotChartNode.AddAndObservePlotDataNodeID(ShapeInputPlotDataNode.GetID())
+
+    # Create PlotView node
+    pvns = slicer.mrmlScene.GetNodesByClass('vtkMRMLPlotViewNode')
+    pvns.InitTraversal()
+    plotViewNode = pvns.GetNextItemAsObject()
+    # Set plotChart ID in PlotView
+    plotViewNode.SetPlotChartNodeID(plotChartNode.GetID())
+
+    # Set a few properties of the Plot.
+    plotChartNode.SetAttribute('TitleName', 'Regression Plot')
+    plotChartNode.SetAttribute('XAxisLabelName', 'Time Points (ages)')
+    plotChartNode.SetAttribute('YAxisLabelName', 'Shape Volume')
+    plotChartNode.SetAttribute('Type', 'Scatter')
+
 #
 # RegressionVisualizationLogic
 #
@@ -727,6 +882,18 @@ class RegressionVisualizationLogic(ScriptedLoadableModuleLogic):
           colormap.InsertTuple1(i, tuple)
         model.GetPolyData().GetPointData().AddArray(colormap)
 
+  def readCSVFile(self, pathToCSV):
+
+    shapePaths = []
+    timepts = []
+    with open(pathToCSV) as csvfile:
+      allRows = csv.reader(csvfile, delimiter=',', quotechar='|')
+      for row in allRows:
+        shapePaths.append(row[0].strip())
+        timepts.append(row[1].strip())
+
+    return shapePaths, timepts
+
   def computeSequenceRange(self, colormapName, RegressionModels):
     sequencerange = [99999999999, -99999999999]
     for number, model in RegressionModels.items():
@@ -736,6 +903,17 @@ class RegressionVisualizationLogic(ScriptedLoadableModuleLogic):
       if modelrange[1] > sequencerange[1]:
         sequencerange[1] = modelrange[1]
     return sequencerange
+
+  def findAgeRange(self, dict):
+    min = 99999999999
+    max = 0
+    for i in range(len(dict)):
+      if int(dict[i]) < min:
+        min = int(dict[i])
+      if int(dict[i]) > max:
+        max = int(dict[i])
+
+    return min, max
 
 #
 # RegressionVisualizationTest
