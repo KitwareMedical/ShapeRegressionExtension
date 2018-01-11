@@ -9,7 +9,7 @@ import platform
 import time
 import urllib
 import shutil
-from CommonUtilities import *
+from ShapeRegressionUtilities import *
 
 class colorMapStruct(object):
   def __init__(self):

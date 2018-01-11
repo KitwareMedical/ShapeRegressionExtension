@@ -6,6 +6,7 @@ from slicer.util import VTKObservationMixin
 import platform
 import csv
 import logging
+from ShapeRegressionUtilities import *
 
 
 #
