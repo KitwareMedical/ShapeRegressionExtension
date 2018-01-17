@@ -364,23 +364,38 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     inputShapesDirectory = self.interface.shapeInputDirectory.directory.encode('utf-8')
     outputDirectory = self.interface.outputDirectory.directory.encode('utf-8')
 
-    CSVInputshapesparametersfilepath = os.path.join(outputDirectory, "CVSInputshapesparameters.csv")
-    print CSVInputshapesparametersfilepath
-    print outputDirectory
-    file = open(CSVInputshapesparametersfilepath, 'w')
-    cw = csv.writer(file, delimiter=',')
     table = self.interface.tableWidget_inputShapeParameters
-    for row in range(0, table.rowCount):
-      listcsv = []
+    # Sort the shape input data according to their age
+    age_list = list()
+    for row in range(table.rowCount):
+        widget = table.cellWidget(row, 1)
+        tuple = widget.children()
+        spinbox = tuple[1]
+        age_list.append(spinbox.value)
+
+    print age_list
+    age_list = sorted(age_list)
+    print age_list
+    parameters_sorted = dict()
+    for row in range(table.rowCount):
+      index = age_list.index(table.cellWidget(row, 1).children()[1].value)
+      parameters_sorted[index] = list()
       inputshaperootname = table.cellWidget(row, 0)
       inputshapefilepath = inputShapesDirectory + "/" + inputshaperootname.text + ".vtk"
-      listcsv.append(inputshapefilepath)
-      for column in range(1, 5):
+      parameters_sorted[index].append(inputshapefilepath)
+      for column in range(1, table.columnCount):
         widget = table.cellWidget(row, column)
         tuple = widget.children()
         spinbox = tuple[1]
-        listcsv.append(spinbox.value)
-      cw.writerow(listcsv)
+        parameters_sorted[index].append(spinbox.value)
+
+    # Write the parameters needed in a CSV file
+    CSVInputshapesparametersfilepath = os.path.join(outputDirectory, "CVSInputshapesparameters.csv")
+    file = open(CSVInputshapesparametersfilepath, 'w')
+    cw = csv.writer(file, delimiter=',')
+    for index in range(len(parameters_sorted)):
+      parameters = parameters_sorted[index]
+      cw.writerow(parameters)
     file.close()
 
     return CSVInputshapesparametersfilepath
