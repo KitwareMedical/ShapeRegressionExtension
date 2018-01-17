@@ -66,8 +66,10 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     # Global variables of the Interface
     # Input Shapes
     self.CollapsibleButton_RegressionComputationInput = self.getWidget('CollapsibleButton_RegressionComputationInput')
+    self.tabWidget_InputShapes = self.getWidget('tabWidget_InputShapes')
     self.shapeInputDirectory = self.getWidget('DirectoryButton_ShapeInput')
     self.tableWidget_inputShapeParameters = self.getWidget('tableWidget_inputShapeParameters')
+    self.PathLineEdit_ShapeInputsCSV = self.getWidget('PathLineEdit_ShapeInputsCSV')
 
     # Times Parameters
     self.CollapsibleButton_TimeParemeters = self.getWidget('CollapsibleButton_TimeParemeters')
@@ -258,9 +260,14 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     if (self.interface.optimMethod.currentText == "FISTA"):
       useFista = True
 
-    # Write CSV file containing the parameters for each shapes
-    self.pathToCSV = self.writeCSVInputshapesparameters()
-
+    if self.interface.tabWidget_InputShapes.currentIndex == 0:
+      # Write CSV file containing the parameters for each shapes
+      self.pathToCSV = self.writeCSVInputshapesparameters()
+    else:
+      self.pathToCSV = self.interface.PathLineEdit_ShapeInputsCSV.currentPath
+      if not os.path.exists(self.pathToCSV):
+        self.interface.warningMessage('The CSV filepath is not existing.', None)
+        return
     # Read CSV file containing the parameters for each shapes
     self.readCSVFile(self.pathToCSV)
 

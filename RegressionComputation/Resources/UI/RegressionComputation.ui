@@ -33,23 +33,83 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QWidget" name="widget_ShapeInputDirectory" native="true">
-        <layout class="QFormLayout" name="formLayout_6">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_RegressionComputationInputDirectory">
-           <property name="text">
-            <string>Shape input Directory:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="ctkDirectoryButton" name="DirectoryButton_ShapeInput"/>
-         </item>
-        </layout>
+       <widget class="QTabWidget" name="tabWidget_InputShapes">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="tab_inputDirectory">
+         <attribute name="title">
+          <string>Input Directory</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QWidget" name="widget_ShapeInputDirectory" native="true">
+            <layout class="QFormLayout" name="formLayout_6">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_RegressionComputationInputDirectory">
+               <property name="text">
+                <string>Shape input Directory:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="ctkDirectoryButton" name="DirectoryButton_ShapeInput"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTableWidget" name="tableWidget_inputShapeParameters"/>
+          </item>
+          <item>
+           <widget class="QWidget" name="widget_exportShapeInputsInCSV" native="true">
+            <layout class="QFormLayout" name="formLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_exportShapeInputsInCSV">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Export input shapes Information in a CSV files: </string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="checkBox_exportShapeInputsInCSV">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_InputCSV">
+         <attribute name="title">
+          <string>Input CSV </string>
+         </attribute>
+         <layout class="QFormLayout" name="formLayout_7">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_ShapeInputsCSV">
+            <property name="text">
+             <string>Input CSV</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="ctkPathLineEdit" name="PathLineEdit_ShapeInputsCSV"/>
+          </item>
+         </layout>
+        </widget>
        </widget>
-      </item>
-      <item>
-       <widget class="QTableWidget" name="tableWidget_inputShapeParameters"/>
       </item>
      </layout>
     </widget>
@@ -199,6 +259,9 @@
       <enum>QFrame::StyledPanel</enum>
      </property>
      <layout class="QFormLayout" name="formLayout_4">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_OutputDirectory">
         <property name="text">
@@ -206,10 +269,20 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="1">
+       <widget class="ctkDirectoryButton" name="DirectoryButton_OutputDirectory"/>
+      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_OutputRootname">
         <property name="text">
          <string>Output rootname: </string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="lineEdit_OutputRootname">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Rootname for output files.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
@@ -229,16 +302,6 @@
          <number>99999</number>
         </property>
        </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEdit_OutputRootname">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Rootname for output files.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="ctkDirectoryButton" name="DirectoryButton_OutputDirectory"/>
       </item>
      </layout>
     </widget>
@@ -394,6 +457,11 @@
    <class>ctkDirectoryButton</class>
    <extends>QWidget</extends>
    <header>ctkDirectoryButton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkPathLineEdit</class>
+   <extends>QWidget</extends>
+   <header>ctkPathLineEdit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
