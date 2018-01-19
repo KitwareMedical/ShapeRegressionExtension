@@ -10,7 +10,7 @@ set(MODULE_PYTHON_SCRIPTS
   )
 
 set(MODULE_PYTHON_RESOURCES
-  Resources/Icons/${MODULE_NAME}.png
+  Resources/Icons/ShapeRegressionExtension.png
   Resources/UI/${MODULE_NAME}.ui
   ShapeRegressionUtilities/__init__.py
   ShapeRegressionUtilities/utility.py
