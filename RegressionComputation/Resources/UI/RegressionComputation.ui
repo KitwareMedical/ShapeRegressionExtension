@@ -120,7 +120,7 @@
       <string>Time Parameters</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -180,7 +180,7 @@
       <string>Deformation Parameters</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -253,7 +253,7 @@
       <string>Output Parameters</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -275,7 +275,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label_OutputRootname">
         <property name="text">
-         <string>Output rootname: </string>
+         <string>Time-regressed shapes prefix</string>
         </property>
        </widget>
       </item>
@@ -312,7 +312,7 @@
       <string>Optional Parameters</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>

@@ -20,19 +20,6 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
-   <item row="2" column="0">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
    <item row="0" column="0">
     <widget class="ctkCollapsibleButton" name="CollapsibleButton_ShapeRegressionInput">
      <property name="text">
@@ -46,71 +33,50 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QTabWidget" name="tabWidget">
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="tab_directory">
-         <attribute name="title">
-          <string>Input Directory</string>
-         </attribute>
-         <layout class="QFormLayout" name="formLayout">
-          <property name="fieldGrowthPolicy">
-           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_ShapeRegressionInputInputDirectory">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Input Directory &lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Possible Label map data : -GIPL (.gipl and .gipl.gz) -NifTI (.nii and .nii.gz) -NRRD (.nrrd) -MGh (.mgh and .mgh.gz) -MetaImage (.mhd) -Analyze (.hdr)&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Possible model data: -VTK (.vtk) and -VTP (.vtp)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Input Directory</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="ctkDirectoryButton" name="DirectoryButton_ShapeRegressionInputDirectory">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Input Directory &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_ShapeRegressionInputRootname">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Output Directory&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Rootname</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="lineEdit_ShapeRegressionInputRootname"/>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="tab_csv">
-         <attribute name="title">
-          <string>Input CSV</string>
-         </attribute>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_ShapeRegressionInputCSV">
-            <property name="text">
-             <string>Input CSV</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="ctkPathLineEdit" name="PathLineEdit_ShapeRegressionInputCSV"/>
-          </item>
-         </layout>
-        </widget>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QFormLayout" name="formLayout">
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="lineEdit_ShapeRegressionInputRootname">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Rootname of the time-regressed shapes: &lt;br/&gt;Each  time-regressed shape computed by RegressionComputation has a rootname composed by: &lt;br/&gt;- the &lt;span style=&quot; font-style:italic;&quot;&gt;prefix&lt;/span&gt; specified in RegressionComputation followed by &lt;span style=&quot; font-style:italic;&quot;&gt;final_time_&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="ctkDirectoryButton" name="DirectoryButton_ShapeRegressionInputDirectory">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Input Directory &lt;br/&gt;The input directory should contain the time-regressed shapes computed by RegressionComputation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_ShapeRegressionInputInputDirectory">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Input Directory &lt;br/&gt;The input directory should contain the time-regressed shapes computed by RegressionComputation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Input Directory</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_ShapeRegressionInputRootname">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Rootname of the time-regressed shapes: &lt;br/&gt;Each  time-regressed shape computed by RegressionComputation has a rootname composed by: &lt;br/&gt;- the &lt;span style=&quot; font-style:italic;&quot;&gt;prefix&lt;/span&gt; specified in RegressionComputation followed by &lt;span style=&quot; font-style:italic;&quot;&gt;final_time_&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Rootname</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_CreationSequence">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Creation of the time-regressed sequence&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Creation of Sequence</string>
         </property>
@@ -127,12 +93,18 @@
      <property name="text">
       <string>Sequence Visualization Options</string>
      </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
      <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <widget class="QGroupBox" name="groupBox_SequenceColoring">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Custom of the color maps of the time-regressed shapes contained in the sequence&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="title">
          <string>Coloring</string>
         </property>
@@ -142,6 +114,9 @@
            <layout class="QGridLayout" name="gridLayout_3">
             <item row="0" column="0">
              <widget class="QLabel" name="label_ColorMapChoice">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Colormaps common for all the time-regressed shapes contained in the sequence &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Color Map:</string>
               </property>
@@ -149,6 +124,9 @@
             </item>
             <item row="0" column="1">
              <widget class="QComboBox" name="comboBox_ColorMapChoice">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Colormaps common for all the time-regressed shapes contained in the sequence &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <item>
                <property name="text">
                 <string>Solid Color</string>
@@ -160,6 +138,9 @@
              <widget class="QComboBox" name="comboBox_3DColorMapChoice">
               <property name="enabled">
                <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Choice of the display of one parameter of the 3D color map:&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;- magnitude&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;- X&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;- Y &lt;/p&gt;&lt;p align=&quot;center&quot;&gt;- Z &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <item>
                <property name="text">
@@ -190,6 +171,9 @@
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_ColorMapSequenceRange">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Colormap range of the sequence&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Color Map Range:</string>
               </property>
@@ -200,12 +184,18 @@
               <property name="enabled">
                <bool>false</bool>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Colormap minimum of the sequence&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
              </widget>
             </item>
             <item row="1" column="2">
              <widget class="QLineEdit" name="lineEdit_ColorMapSequenceMax">
               <property name="enabled">
                <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Colormap maximum of the sequence&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -253,7 +243,7 @@
                          <item>
                           <widget class="QDoubleSpinBox" name="doubleSpinBox_ColorSequenceMin">
                            <property name="enabled">
-                            <bool>true</bool>
+                            <bool>false</bool>
                            </property>
                            <property name="minimum">
                             <double>-999999999.000000000000000</double>
@@ -266,7 +256,7 @@
                          <item>
                           <widget class="QDoubleSpinBox" name="doubleSpinBox_ColorSequenceMax">
                            <property name="enabled">
-                            <bool>true</bool>
+                            <bool>false</bool>
                            </property>
                            <property name="minimum">
                             <double>-999999999.000000000000000</double>
@@ -279,7 +269,7 @@
                          <item>
                           <widget class="QPushButton" name="pushButton_ResetColorSequenceRange">
                            <property name="enabled">
-                            <bool>true</bool>
+                            <bool>false</bool>
                            </property>
                            <property name="text">
                             <string>Reset</string>
@@ -475,83 +465,6 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="ctkCollapsibleButton" name="CollapsibleButton_ShapeRegressionInput">
-     <property name="text">
-      <string>Shape Regression Inputs</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-     <property name="contentsFrameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QTabWidget" name="tabWidget">
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="tab_directory">
-         <attribute name="title">
-          <string>Input Directory</string>
-         </attribute>
-         <layout class="QFormLayout" name="formLayout">
-          <property name="fieldGrowthPolicy">
-           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_ShapeRegressionInputInputDirectory">
-            <property name="text">
-             <string>Input Directory</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="ctkDirectoryButton" name="DirectoryButton_ShapeRegressionInputDirectory">
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_ShapeRegressionInputRootname">
-            <property name="text">
-             <string>Rootname</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="lineEdit_ShapeRegressionInputRootname"/>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="tab_csv">
-         <attribute name="title">
-          <string>Input CSV</string>
-         </attribute>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_ShapeRegressionInputCSV">
-            <property name="text">
-             <string>Input CSV</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="ctkPathLineEdit" name="PathLineEdit_ShapeRegressionInputCSV"/>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_CreationSequence">
-        <property name="text">
-         <string>Creation of Sequence</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="3" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
@@ -567,8 +480,14 @@
    </item>
    <item row="2" column="0">
     <widget class="ctkCollapsibleButton" name="CollapsibleButton_ReressionPlot">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Regression's Plot of:&lt;br/&gt;- the time-regressed volume according to the time&lt;br/&gt;- the input shape volume according to the time&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Regression's Plot</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
      </property>
      <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -582,13 +501,20 @@
         <layout class="QFormLayout" name="formLayout_5">
          <item row="0" column="0">
           <widget class="QLabel" name="label_RegressionInputShapesCSV">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;CSV file containing the input shapes used in RegressionComputation to compute the time-regressed shapes&lt;br/&gt;- This CSV file (&lt;span style=&quot; font-style:italic;&quot;&gt;CSVInputshapesparameters.csv) &lt;/span&gt;has been created automatically in the RegressionComputation output folder&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Input Shapes CSV: </string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="ctkPathLineEdit" name="PathLineEdit_RegressionInputShapesCSV"/>
+          <widget class="ctkPathLineEdit" name="PathLineEdit_RegressionInputShapesCSV">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;CSV file containing the input shapes used in RegressionComputation to compute the time-regressed shapes&lt;br/&gt;- This CSV file (&lt;span style=&quot; font-style:italic;&quot;&gt;CSVInputshapesparameters.csv) &lt;/span&gt;has been created automatically in the RegressionComputation output folder&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
