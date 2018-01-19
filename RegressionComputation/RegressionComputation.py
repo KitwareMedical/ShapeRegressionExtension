@@ -373,15 +373,13 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
         spinbox = tuple[1]
         age_list.append(spinbox.value)
 
-    print age_list
     age_list = sorted(age_list)
-    print age_list
     parameters_sorted = dict()
     for row in range(table.rowCount):
       index = age_list.index(table.cellWidget(row, 1).children()[1].value)
       parameters_sorted[index] = list()
-      inputshaperootname = table.cellWidget(row, 0)
-      inputshapefilepath = inputShapesDirectory + "/" + inputshaperootname.text + ".vtk"
+      inputshaperootname = table.cellWidget(row, 0).text
+      inputshapefilepath = inputShapesDirectory + "/" + inputshaperootname + ".vtk"
       parameters_sorted[index].append(inputshapefilepath)
       for column in range(1, table.columnCount):
         widget = table.cellWidget(row, column)
@@ -503,11 +501,12 @@ class RegressionComputationTest(ScriptedLoadableModuleTest, VTKObservationMixin)
 
     # Parameter by default
     moduleWidget.shapeInputDirectory.directory = inputDirectoryPath
-    inputShapeParameters = {0:[16,30,0,1], 1:[17,10,0,1], 2:[19,10,0,1], 3:[21,10,0,1], 4:[24,10,0,1] } #[age, sigmaW, tris, weight]
+    inputShapeParameters = {'SphereToEllipsoid_00':[16,30,0,1], 'SphereToEllipsoid_01':[17,10,0,1], 'SphereToEllipsoid_02':[19,10,0,1], 'SphereToEllipsoid_03':[21,10,0,1], 'SphereToEllipsoid_04':[24,10,0,1] } #[age, sigmaW, tris, weight]
 
     for row in range(0, moduleWidget.tableWidget_inputShapeParameters.rowCount):
-      param = inputShapeParameters[row]
-      for column in range (0,4):
+      inputshaperootname = moduleWidget.tableWidget_inputShapeParameters.cellWidget(row, 0).text
+      param = inputShapeParameters[inputshaperootname]
+      for column in range (0,moduleWidget.tableWidget_inputShapeParameters.columnCount - 1):
         widget = moduleWidget.tableWidget_inputShapeParameters.cellWidget(row, column + 1)
         tuple = widget.children()
         spinBox = tuple[1]
