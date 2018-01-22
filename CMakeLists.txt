@@ -7,8 +7,8 @@ set(PROJECT_NAME ShapeRegressionExtension)
 # Extension meta-information
 set(EXTENSION_HOMEPAGE "")
 set(EXTENSION_CATEGORY "Shape Regression")
-set(EXTENSION_CONTRIBUTORS "Laura Pascal (Kitware Inc.), Beatriz Paniagua(Kitware Inc.), James Fishbaugh (University of North Carolina)")
-set(EXTENSION_DESCRIPTION "")
+set(EXTENSION_CONTRIBUTORS "Laura Pascal (Kitware Inc.), Beatriz Paniagua (Kitware Inc.), James Fishbaugh (University of North Carolina)")
+set(EXTENSION_DESCRIPTION "Computation and visualization of time-regressed shapes in a collection of 3D shape inputs associated to a linear variable")
 
 
 set(EXTENSION_ICONURL "")

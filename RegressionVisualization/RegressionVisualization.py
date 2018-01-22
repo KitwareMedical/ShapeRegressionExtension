@@ -59,6 +59,8 @@ class RegressionVisualization(ScriptedLoadableModule):
     self.parent.dependencies = []
     self.parent.contributors = ["Laura Pascal (Kitware Inc.), Beatriz Paniagua (Kitware Inc.)"]
     self.parent.helpText = """
+    * Plot the time-regressed shape volume according to the linear variable\n
+    * Visualize the sequence of the time-regressed shapes generated
     """
     self.parent.acknowledgementText = """
       This work was supported by NIH NIBIB R01EB021391

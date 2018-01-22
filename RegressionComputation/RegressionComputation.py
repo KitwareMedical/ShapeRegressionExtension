@@ -23,8 +23,10 @@ class RegressionComputation(ScriptedLoadableModule):
     self.parent.title = "RegressionComputation"
     self.parent.categories = ["Shape Regression"]
     self.parent.dependencies = []
-    self.parent.contributors = ["Laura Pascal (Kitware Inc.), Beatriz Paniagua (Kitware Inc.)"]
+    self.parent.contributors = ["Laura Pascal (Kitware Inc.), James Fishbaugh (University of North Carolina), Beatriz Paniagua (Kitware Inc.)"]
     self.parent.helpText = """
+    Computation of time-regressed shapes in a collection of 3D shape inputs associated to a linear variable.
+    This module uses shape4D CLI: https://github.com/laurapascal/shape4D.
     """
     self.parent.acknowledgementText = """
       This work was supported by NIH NIBIB R01EB021391
