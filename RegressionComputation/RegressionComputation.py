@@ -249,11 +249,14 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     XMLdriverfilepath = self.writeXMLdriverFile()
 
     # Call Shape4D
-    parameters = {}
-    print XMLdriverfilepath
-    parameters["inputXML"] = XMLdriverfilepath
-    self.addObserver(self.shape4D_cli_node, self.StatusModifiedEvent, self.onCLIModuleModified)
-    slicer.cli.run(self.shape4D_module, self.shape4D_cli_node, parameters, wait_for_completion=False)
+    if XMLdriverfilepath:
+      parameters = {}
+      print XMLdriverfilepath
+      parameters["inputXML"] = XMLdriverfilepath
+      self.addObserver(self.shape4D_cli_node, self.StatusModifiedEvent, self.onCLIModuleModified)
+      slicer.cli.run(self.shape4D_module, self.shape4D_cli_node, parameters, wait_for_completion=False)
+    else:
+      self.interface.applyButton.setText("Run Shape4D")
 
   def writeXMLdriverFile(self):
     print "Write XML driver file"
@@ -271,7 +274,9 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
         self.interface.warningMessage('The CSV filepath is not existing.', None)
         return
     # Read CSV file containing the parameters for each shapes
-    self.readCSVFile(self.pathToCSV)
+    findInputShape = self.readCSVFile(self.pathToCSV)
+    if not findInputShape:
+      return False
 
     if sys.platform == 'win32':
       experimentName = "/ShapeRegression"
@@ -416,6 +421,15 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
         self.sigmaWs.append(row[2].strip())
         self.shapeIndices.append(row[3].strip())
         self.weights.append(row[4].strip())
+
+    if len(self.shapePaths) == 0:
+      self.interface.warningMessage('No shape input found', None)
+      return False
+    if len(self.shapePaths) == 1:
+      self.interface.warningMessage('Only one shape input found. The module need at least 2 shape inputs.', None)
+      return False
+
+    return True
 
     # print self.shapePaths
     # print self.timepts
