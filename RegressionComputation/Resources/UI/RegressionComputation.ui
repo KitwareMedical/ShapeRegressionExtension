@@ -70,7 +70,7 @@
                 <bool>false</bool>
                </property>
                <property name="text">
-                <string>Export input shapes Information in a CSV files: </string>
+                <string>Export input shapes information in a CSV file: </string>
                </property>
               </widget>
              </item>
