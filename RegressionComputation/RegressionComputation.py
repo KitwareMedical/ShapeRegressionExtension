@@ -199,16 +199,19 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
           self.tableWidget_inputShapeParameters.setCellWidget(row, 0, labelVTKFile)
 
           # Column 1-2-3-4:
-          for i in range(1,5):
+          for column in range(1,5):
             widget = qt.QWidget()
             layout = qt.QHBoxLayout(widget)
-            spinBox = qt.QSpinBox()
+            if not column == 2:
+              spinBox = qt.QSpinBox()
+            else:
+              spinBox = qt.QDoubleSpinBox()
             spinBox.setMinimum(0)
             layout.addWidget(spinBox)
             layout.setAlignment(0x84)
             layout.setContentsMargins(0, 0, 0, 0)
             widget.setLayout(layout)
-            self.tableWidget_inputShapeParameters.setCellWidget(row, i, widget)
+            self.tableWidget_inputShapeParameters.setCellWidget(row, column, widget)
 
           row = row + 1
 
