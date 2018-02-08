@@ -169,6 +169,9 @@
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Set the number of time points for time discretization.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
+        <property name="value">
+         <number>20</number>
+        </property>
        </widget>
       </item>
      </layout>
@@ -356,6 +359,9 @@
         </property>
         <property name="singleStep">
          <number>100</number>
+        </property>
+        <property name="value">
+         <number>250</number>
         </property>
        </widget>
       </item>

@@ -204,6 +204,8 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
             layout = qt.QHBoxLayout(widget)
             if not column == 2:
               spinBox = qt.QSpinBox()
+              if column == 4:
+                spinBox.value = 1
             else:
               spinBox = qt.QDoubleSpinBox()
             spinBox.setMinimum(0)
