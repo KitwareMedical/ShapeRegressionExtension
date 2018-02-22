@@ -141,6 +141,10 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     #   Regression's Plot
     self.CollapsibleButton_ReressionPlot = self.getWidget('CollapsibleButton_ReressionPlot')
     self.PathLineEdit_RegressionInputShapesCSV = self.getWidget('PathLineEdit_RegressionInputShapesCSV')
+    self.groupBox_RegressionTimePointRange = self.getWidget('groupBox_RegressionTimePointRange')
+    self.t0 = self.getWidget('spinBox_StartingTimePoint')
+    self.tn = self.getWidget('spinBox_EndingTimePoint')
+    self.defaultTimePointRange = self.getWidget('checkBox_DefaultTimePointRange')
     self.pushButton_RegressionPlot = self.getWidget('pushButton_RegressionPlot')
 
     # Connect Functions
@@ -167,6 +171,10 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.ColorPickerButton_startingColor.connect('clicked()', self.onUpdateSequenceSolidColor)
     self.ColorPickerButton_endingColor.connect('clicked()', self.onUpdateSequenceSolidColor)
 
+    self.PathLineEdit_RegressionInputShapesCSV.connect('currentPathChanged(const QString)', self.onCurrentRegressionInputShapesCSVPathChanged)
+    self.t0.connect('valueChanged(int)', self.onSetMaximumStartingTimePoint)
+    self.tn.connect('valueChanged(int)', self.onSetMinimumEndingTimePoint)
+    self.defaultTimePointRange.connect('clicked(bool)', self.onEnableTimePointRange)
     self.CollapsibleButton_ReressionPlot.connect('clicked()',
                                                   lambda: self.onSelectedCollapsibleButtonOpen(
                                                     self.CollapsibleButton_ReressionPlot))
@@ -222,6 +230,17 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       MRMLUtility.removeMRMLNode(self.sequencebrowser)
     if not self.displaynodesequence == None:
       MRMLUtility.removeMRMLNode(self.displaynodesequence)
+
+    # Reset Regression's Time Point
+    self.defaultTimePointRange.setChecked(True)
+    self.t0.blockSignals(True)
+    self.tn.blockSignals(True)
+    self.tn.setMinimum(0)
+    self.tn.value = 0
+    self.t0.setMaximum(9999999)
+    self.t0.value = 0
+    self.t0.blockSignals(False)
+    self.tn.blockSignals(False)
 
   # Functions to recover the widget in the .ui file
   def getWidget(self, objectName):
@@ -784,21 +803,20 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       self.warningMessage(messageText, messageInformation)
       return
 
-    shapePaths, timepts = self.Logic.readCSVFile(self.PathLineEdit_RegressionInputShapesCSV.currentPath)
-    ShapeInputNumPoints = len(shapePaths)
+    ShapeInputNumPoints = len(self.shapePaths)
     table2.SetNumberOfRows(ShapeInputNumPoints)
 
     # Find the minimum and the maximum of the ages
-    ageMin, ageMax = self.Logic.findAgeRange(timepts)
+    ageMin, ageMax = self.t0.value, self.tn.value
 
-    for i in range(len(shapePaths)):
+    for i in range(len(self.shapePaths)):
       # Age of the shape input
-      table2.SetValue(i, 0, timepts[i])
+      table2.SetValue(i, 0, str( self.timepts[i] ))
 
       # Compute of the volume of each shape input
-      shapePaths_dir = os.path.split(shapePaths[i])[0]
-      shapePaths_rootname = os.path.split(shapePaths[i])[1].split(".")[0]
-      shapePaths_filename = os.path.split(shapePaths[i])[1]
+      shapePaths_dir = os.path.split(self.shapePaths[i])[0]
+      shapePaths_rootname = os.path.split(self.shapePaths[i])[1].split(".")[0]
+      shapePaths_filename = os.path.split(self.shapePaths[i])[1]
       model = MRMLUtility.loadMRMLNode(shapePaths_rootname, shapePaths_dir, shapePaths_filename, 'ModelFile')
       polydata = model.GetPolyData()
       triangleFilter = vtk.vtkTriangleFilter()
@@ -870,6 +888,49 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     plotChartNode.SetAttribute('XAxisLabelName', 'Time Points (ages)')
     plotChartNode.SetAttribute('YAxisLabelName', 'Shape Volume')
     plotChartNode.SetAttribute('Type', 'Scatter')
+
+  def onEnableTimePointRange(self):
+    # Enable/Disable the time point range spinboxes
+    self.t0.enabled = not self.defaultTimePointRange.checkState()
+    self.tn.enabled = not self.defaultTimePointRange.checkState()
+
+    # If the default value of the time point range is checked, set them
+    if self.defaultTimePointRange.checkState():
+      self.setDefaultTimePointRange()
+
+  def onCurrentRegressionInputShapesCSVPathChanged(self):
+    if os.path.exists(self.PathLineEdit_RegressionInputShapesCSV.currentPath):
+      # Read the CSV file containing the input used for the computation of the regression
+      self.shapePaths, self.timepts = self.Logic.readCSVFile(self.PathLineEdit_RegressionInputShapesCSV.currentPath)
+
+      self.groupBox_RegressionTimePointRange.enabled = True
+
+      # If the default value of the time point range is checked, set them
+      if self.defaultTimePointRange.checkState():
+        self.setDefaultTimePointRange()
+    else:
+      self.groupBox_RegressionTimePointRange.enabled = False
+
+  def setDefaultTimePointRange(self):
+    timepts_sorted = sorted(self.timepts)
+    # Set up the time point values by default
+    if self.defaultTimePointRange.checkState():
+      self.tn.setMinimum(0)
+      self.t0.setMaximum(999999999)
+      self.t0.blockSignals(True)
+      self.tn.blockSignals(True)
+      self.t0.value = timepts_sorted[0]
+      self.tn.setMinimum(self.t0.value)
+      self.tn.value = timepts_sorted[-1]
+      self.t0.setMaximum(self.tn.value)
+      self.t0.blockSignals(False)
+      self.tn.blockSignals(False)
+
+  def onSetMaximumStartingTimePoint(self):
+    self.t0.setMaximum(self.tn.value)
+
+  def onSetMinimumEndingTimePoint(self):
+    self.tn.setMinimum(self.t0.value)
 
 #
 # RegressionVisualizationLogic
@@ -966,7 +1027,7 @@ class RegressionVisualizationLogic(ScriptedLoadableModuleLogic):
       allRows = csv.reader(csvfile, delimiter=',', quotechar='|')
       for row in allRows:
         shapePaths.append(row[0].strip())
-        timepts.append(row[1].strip())
+        timepts.append(int( row[1].strip() ))
 
     return shapePaths, timepts
 
@@ -979,17 +1040,6 @@ class RegressionVisualizationLogic(ScriptedLoadableModuleLogic):
       if modelrange[1] > sequencerange[1]:
         sequencerange[1] = modelrange[1]
     return sequencerange
-
-  def findAgeRange(self, dict):
-    min = 99999999999
-    max = 0
-    for i in range(len(dict)):
-      if int(dict[i]) < min:
-        min = int(dict[i])
-      if int(dict[i]) > max:
-        max = int(dict[i])
-
-    return min, max
 
 #
 # RegressionVisualizationTest

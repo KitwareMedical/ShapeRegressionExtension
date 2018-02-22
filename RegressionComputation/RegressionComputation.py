@@ -78,6 +78,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.t0 = self.getWidget('spinBox_StartingTimePoint')
     self.tn = self.getWidget('spinBox_EndingTimePoint')
     self.T = self.getWidget('spinBox_NumberOfTimepoints')
+    self.defaultTimePointRange = self.getWidget('checkBox_defaultTimePointRange')
 
     # Deformation Parameters
     self.CollapsibleButton_DeformationParameters = self.getWidget('CollapsibleButton_DeformationParameters')
@@ -111,6 +112,11 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.CollapsibleButton_TimeParemeters.connect('clicked()',
                                                         lambda: self.onSelectedCollapsibleButtonOpen(
                                                           self.CollapsibleButton_TimeParemeters))
+
+    self.t0.connect('valueChanged(int)', self.onSetMaximumStartingTimePoint)
+    self.tn.connect('valueChanged(int)', self.onSetMinimumEndingTimePoint)
+    self.defaultTimePointRange.connect('clicked(bool)', self.onEnableTimePointRange)
+
     self.CollapsibleButton_DeformationParameters.connect('clicked()',
                                                         lambda: self.onSelectedCollapsibleButtonOpen(
                                                           self.CollapsibleButton_DeformationParameters))
@@ -204,6 +210,8 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
             layout = qt.QHBoxLayout(widget)
             if not column == 2:
               spinBox = qt.QSpinBox()
+              if column == 1:
+                spinBox.connect('valueChanged(int)', self.onDefaultTimePointRange)
               if column == 4:
                 spinBox.value = 1
             else:
@@ -216,6 +224,34 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
             self.tableWidget_inputShapeParameters.setCellWidget(row, column, widget)
 
           row = row + 1
+
+  def onEnableTimePointRange(self):
+    # Enable/Disable the time point range spinboxes
+    self.t0.enabled = not self.defaultTimePointRange.checkState()
+    self.tn.enabled = not self.defaultTimePointRange.checkState()
+
+    # Enable/Disable the auto set of the time point range
+    table = self.tableWidget_inputShapeParameters
+    for row in range(table.rowCount):
+      widget = table.cellWidget(row, 1)
+      tuple = widget.children()
+      spinbox = tuple[1]
+      spinbox.blockSignals(not self.defaultTimePointRange.checkState())
+
+    # If the default value of the time point range is checked, set them
+    if self.defaultTimePointRange.checkState():
+      self.onDefaultTimePointRange()
+
+  def onDefaultTimePointRange(self):
+    self.Logic.sortInputCasesAges()
+    self.t0.value = self.Logic.age_list[0]
+    self.tn.value = self.Logic.age_list[-1]
+
+  def onSetMaximumStartingTimePoint(self):
+    self.t0.setMaximum(self.tn.value)
+
+  def onSetMinimumEndingTimePoint(self):
+    self.tn.setMinimum(self.t0.value)
 
   def onApplyButton(self):
     if self.applyButton.text == "Run Shape4D":
@@ -372,23 +408,29 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     f.close()
     return XMLdriverfilepath
 
-  def writeCSVInputshapesparameters(self):
-    inputShapesDirectory = self.interface.shapeInputDirectory.directory.encode('utf-8')
-    outputDirectory = self.interface.outputDirectory.directory.encode('utf-8')
-
+  def sortInputCasesAges(self):
     table = self.interface.tableWidget_inputShapeParameters
     # Sort the shape input data according to their age
     age_list = list()
     for row in range(table.rowCount):
-        widget = table.cellWidget(row, 1)
-        tuple = widget.children()
-        spinbox = tuple[1]
-        age_list.append(spinbox.value)
+      widget = table.cellWidget(row, 1)
+      tuple = widget.children()
+      spinbox = tuple[1]
+      age_list.append(spinbox.value)
 
-    age_list = sorted(age_list)
+    self.age_list = sorted(age_list)
+
+  def writeCSVInputshapesparameters(self):
+    inputShapesDirectory = self.interface.shapeInputDirectory.directory.encode('utf-8')
+    outputDirectory = self.interface.outputDirectory.directory.encode('utf-8')
+    table = self.interface.tableWidget_inputShapeParameters
+
+    # Sort the shape input data according to their age
+    self.sortInputCasesAges()
+
     parameters_sorted = dict()
     for row in range(table.rowCount):
-      index = age_list.index(table.cellWidget(row, 1).children()[1].value)
+      index = self.age_list.index(table.cellWidget(row, 1).children()[1].value)
       parameters_sorted[index] = list()
       inputshaperootname = table.cellWidget(row, 0).text
       inputshapefilepath = inputShapesDirectory + "/" + inputshaperootname + ".vtk"

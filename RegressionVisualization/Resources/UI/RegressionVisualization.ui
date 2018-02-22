@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1223</width>
-    <height>1199</height>
+    <height>965</height>
    </rect>
   </property>
   <property name="acceptDrops">
@@ -513,6 +513,49 @@
           <widget class="ctkPathLineEdit" name="PathLineEdit_RegressionInputShapesCSV">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;CSV file containing the input shapes used in RegressionComputation to compute the time-regressed shapes&lt;br/&gt;- This CSV file (&lt;span style=&quot; font-style:italic;&quot;&gt;CSVInputshapesparameters.csv) &lt;/span&gt;has been created automatically in the RegressionComputation output folder&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_RegressionTimePointRange">
+        <property name="title">
+         <string>Regression's Time Points</string>
+        </property>
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label_TimePointRange">
+           <property name="text">
+            <string>Time Point Range</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinBox_StartingTimePoint">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinBox_EndingTimePoint">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_DefaultTimePointRange">
+           <property name="text">
+            <string>default value</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
