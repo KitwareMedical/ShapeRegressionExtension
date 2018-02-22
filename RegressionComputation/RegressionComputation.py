@@ -152,7 +152,44 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     pass
 
   def onCloseScene(self, obj, event):
-    pass
+    # Reset Input shape parameters
+    self.tabWidget_InputShapes.currentIndex = 0
+    #self.shapeInputDirectory.directory
+    self.PathLineEdit_ShapeInputsCSV.setCurrentPath(" ")
+
+    # Reset the Input Parameters Table
+    self.tableWidget_inputShapeParameters.clearContents()
+    self.tableWidget_inputShapeParameters.setRowCount(0)
+
+    # Reset Time Point Parameters
+    self.defaultTimePointRange.setChecked(True)
+    self.t0.blockSignals(True)
+    self.tn.blockSignals(True)
+    self.tn.setMinimum(0)
+    self.tn.value = 0
+    self.t0.setMaximum(9999999)
+    self.t0.value = 0
+    self.t0.blockSignals(False)
+    self.tn.blockSignals(False)
+    self.T.value = 20
+
+    # Reset deformation parameters
+    self.defKernelWidth.value = 0
+    self.kernelType.setCurrentIndex(0)
+    self.regularityWeight.value = 0
+
+    # Reset Output Parameters
+    self.outputPrefix.clear()
+    self.saveEveryN.value = 5
+
+    # Reset Optional Parameters
+    self.estimateBaseline.setChecked(False)
+    self.optimMethod.setCurrentIndex(0)
+    self.breakRatio.value = 0.000001
+    self.maxIters.value = 250
+
+    # Reset push button
+    self.applyButton.setText("Run Shape4D")
 
   # Functions to recover the widget in the .ui file
   def getWidget(self, objectName):
