@@ -231,7 +231,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
   def onInputShapesDirectoryChanged(self):
     inputShapesDirectory = self.shapeInputDirectory.directory.encode('utf-8')
     row = 0
-    for file in os.listdir(inputShapesDirectory):
+    for file in sorted(os.listdir(inputShapesDirectory)):
         if file.endswith(".vtk"):
           self.tableWidget_inputShapeParameters.setRowCount(row + 1)
 
