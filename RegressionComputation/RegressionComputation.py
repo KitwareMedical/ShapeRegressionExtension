@@ -239,50 +239,75 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     messageBox.exec_()
 
   def onInputShapesDirectoryChanged(self):
+    
     inputShapesDirectory = self.shapeInputDirectory.directory.encode('utf-8')
     row = 0
-    for file in sorted(os.listdir(inputShapesDirectory)):
-        if file.endswith(".vtk"):
-          self.tableWidget_inputShapeParameters.setRowCount(row + 1)
+    
+    allShapeSigmaWs = []
+    
+    for curFile in sorted(os.listdir(inputShapesDirectory)):
+        
+        if not (curFile.endswith(".vtk")):
+          continue 
+          
+        self.tableWidget_inputShapeParameters.setRowCount(row + 1)
 
-          # Column 0:
-          rootname = os.path.basename(file).split(".")[0]
-          labelVTKFile = qt.QLabel(rootname)
-          labelVTKFile.setAlignment(0x84)
-          self.tableWidget_inputShapeParameters.setCellWidget(row, 0, labelVTKFile)
+        # Read the vtk file to set a default kernel width
+        shapeFile = '%s/%s' %(inputShapesDirectory, curFile)
+        polyReader = vtk.vtkPolyDataReader()
+        polyReader.SetFileName(shapeFile)
+        polyReader.Update()
+        shape = polyReader.GetOutput()
+        shapeBounds = shape.GetBounds()
+        xRange = shapeBounds[1] - shapeBounds[0]
+        yRange = shapeBounds[3] - shapeBounds[2]
+        zRange = shapeBounds[5] - shapeBounds[4]
+        smallestRange = min(xRange, yRange, zRange)
+        initSigmaW = int(smallestRange*0.50)
+        allShapeSigmaWs.append(initSigmaW)
+        
+        # Column 0:
+        rootname = os.path.basename(curFile).split(".")[0]
+        labelVTKFile = qt.QLabel(rootname)
+        labelVTKFile.setAlignment(0x84)
+        self.tableWidget_inputShapeParameters.setCellWidget(row, 0, labelVTKFile)
 
-          # Column 1-2-3-4: (Time Point, Sigma W, Tris, Weight)
-          # We might want to consider using different UI elements for Time Point and Kernel Width that do not have explicit ranges
-          for column in range(1,5):
-            widget = qt.QWidget()
-            layout = qt.QHBoxLayout(widget)
+        # Column 1-2-3-4: (Time Point, Sigma W, Tris, Weight)
+        # We might want to consider using different UI elements for Time Point and Kernel Width that do not have explicit ranges
+        for column in range(1,5):
+          widget = qt.QWidget()
+          layout = qt.QHBoxLayout(widget)
+          
+          # If this is the 'Shape Index' column we limit this to an integer
+          if (column == 3):
+            spinBox = qt.QSpinBox()
+            spinBox.setRange(0,1000)
+            spinBox.value = 0
+          # The rest of the columns are doubles 
+          else:
+            spinBox = qt.QDoubleSpinBox()
             
-            # If this is the 'Shape Index' column we limit this to an integer
-            if (column == 3):
-              spinBox = qt.QSpinBox()
-              spinBox.setRange(0,1000)
-              spinBox.value = 0
-            # The rest of the columns are doubles 
-            else:
-              spinBox = qt.QDoubleSpinBox()
-              
-              if column == 1: # Time Point
-                spinBox.connect('valueChanged(double)', self.onSetTimePointRange)
-                spinBox.setRange(-1e10, 1e10)
-              if column == 2: # Kernel Width
-                spinBox.setRange(0.001, 1e10)
-              if column == 4: # Weight
-                spinBox.value = 1
-                spinBox.setRange(0,1)
-                spinBox.setSingleStep(0.1);
+            if column == 1: # Time Point
+              spinBox.connect('valueChanged(double)', self.onSetTimePointRange)
+              spinBox.setRange(-1e10, 1e10)
+            if column == 2: # Kernel Width
+              spinBox.setRange(0.001, 1e10)
+              spinBox.value = initSigmaW
+            if column == 4: # Weight
+              spinBox.value = 1
+              spinBox.setRange(0,1)
+              spinBox.setSingleStep(0.1);
 
-            layout.addWidget(spinBox)
-            layout.setAlignment(0x84)
-            layout.setContentsMargins(0, 0, 0, 0)
-            widget.setLayout(layout)
-            self.tableWidget_inputShapeParameters.setCellWidget(row, column, widget)
+          layout.addWidget(spinBox)
+          layout.setAlignment(0x84)
+          layout.setContentsMargins(0, 0, 0, 0)
+          widget.setLayout(layout)
+          self.tableWidget_inputShapeParameters.setCellWidget(row, column, widget)
 
-          row = row + 1
+        row = row + 1
+
+    # We can set a default for deformation kernel width as smallest shape kernel
+    self.defKernelWidth.value = min(allShapeSigmaWs)
 
   # I don't see a reason for requiring a user to uncheck a box to set t0 and tn (James)
   
