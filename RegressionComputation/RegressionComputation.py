@@ -92,6 +92,8 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.kernelType = self.getWidget('ComboBox_KernelType')
     self.regularityWeight = self.getWidget('doubleSpinBox_RegularityWeight')
     
+    self.defKernelWidth.setMinimum(0)
+    self.defKernelWidth.setMaximum(9999999)
     self.regularityWeight.value = 0.01    
 
     # Output Parameters
@@ -99,6 +101,9 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.outputDirectory = self.getWidget('DirectoryButton_OutputDirectory')
     self.outputPrefix = self.getWidget('lineEdit_OutputRootname')
     self.saveEveryN = self.getWidget('spinBox_SaveEveryNIterations')
+    
+    self.outputPrefix.text = 'Regression_output_'
+    self.saveEveryN.value = 50
 
     # Optional Parameters
     self.CollapsibleButton_OptionalParameters = self.getWidget('CollapsibleButton_OptionalParameters')
