@@ -248,6 +248,9 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
   def onInputShapesDirectoryChanged(self):
     
     inputShapesDirectory = self.shapeInputDirectory.directory.encode('utf-8')
+    # Set this directory as the default output directory as well
+    self.outputDirectory.directory = str(inputShapesDirectory)
+    
     row = 0
     
     allShapeSigmaWs = []

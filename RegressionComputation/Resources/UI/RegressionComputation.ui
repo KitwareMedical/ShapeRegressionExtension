@@ -450,8 +450,20 @@
       </item>
       <item row="5" column="1">
        <widget class="QSpinBox" name="spinBox_MaxIterations">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>10</height>
+         </size>
+        </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Set the maximum number of iterations.&amp;quot;&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Set the maximum number of iterations.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="maximum">
          <number>999999</number>
@@ -460,7 +472,7 @@
          <number>100</number>
         </property>
         <property name="value">
-         <number>250</number>
+         <number>1000</number>
         </property>
        </widget>
       </item>
@@ -476,23 +488,47 @@
       </item>
       <item row="3" column="1">
        <widget class="ctkComboBox" name="ComboBox_OptimizationMethod">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>10</height>
+         </size>
+        </property>
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Select the optimization method&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <item>
          <property name="text">
-          <string>FISTA</string>
+          <string>Gradient descent</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Gradient descent</string>
+          <string>FISTA</string>
          </property>
         </item>
        </widget>
       </item>
       <item row="4" column="1">
        <widget class="QDoubleSpinBox" name="doubleSpinBox_BreakRatio">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>10</height>
+         </size>
+        </property>
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Set the value for the convergence criteria.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
