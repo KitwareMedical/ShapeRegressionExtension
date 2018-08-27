@@ -91,6 +91,8 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.defKernelWidth = self.getWidget('spinBox_DeformationKernelWidh')
     self.kernelType = self.getWidget('ComboBox_KernelType')
     self.regularityWeight = self.getWidget('doubleSpinBox_RegularityWeight')
+    
+    self.regularityWeight.value = 0.01    
 
     # Output Parameters
     self.CollapsibleButton_OutputParameters = self.getWidget('CollapsibleButton_OutputParameters')
