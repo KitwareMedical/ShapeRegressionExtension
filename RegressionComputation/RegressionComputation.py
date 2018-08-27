@@ -78,8 +78,14 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.t0 = self.getWidget('spinBox_StartingTimePoint')
     self.tn = self.getWidget('spinBox_EndingTimePoint')
     self.T = self.getWidget('spinBox_NumberOfTimepoints')
+    self.t0.enabled = True
+    self.tn.enabled = True
     self.defaultTimePointRange = self.getWidget('checkBox_defaultTimePointRange')
-
+    self.defaultTimePointRange.visible = False
+    
+    self.T.setMinimum(10)
+    self.T.setMaximum(9999999)
+        
     # Deformation Parameters
     self.CollapsibleButton_DeformationParameters = self.getWidget('CollapsibleButton_DeformationParameters')
     self.defKernelWidth = self.getWidget('spinBox_DeformationKernelWidh')
@@ -113,9 +119,10 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
                                                         lambda: self.onSelectedCollapsibleButtonOpen(
                                                           self.CollapsibleButton_TimeParemeters))
 
-    self.t0.connect('valueChanged(int)', self.onSetMaximumStartingTimePoint)
-    self.tn.connect('valueChanged(int)', self.onSetMinimumEndingTimePoint)
-    self.defaultTimePointRange.connect('clicked(bool)', self.onEnableTimePointRange)
+    #self.t0.connect('valueChanged(int)', self.onSetMaximumStartingTimePoint)
+    #self.tn.connect('valueChanged(int)', self.onSetMinimumEndingTimePoint)
+    #self.defaultTimePointRange.connect('clicked(bool)', self.onEnableTimePointRange)
+    
 
     self.CollapsibleButton_DeformationParameters.connect('clicked()',
                                                         lambda: self.onSelectedCollapsibleButtonOpen(
@@ -135,7 +142,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     # Widget Configuration
     #   Input Parameters Table Configuration
     self.tableWidget_inputShapeParameters.setColumnCount(5)
-    self.tableWidget_inputShapeParameters.setHorizontalHeaderLabels([' Input Shapes ', ' Time Point ', ' Sigma W ', ' Tris ', ' Weight '])
+    self.tableWidget_inputShapeParameters.setHorizontalHeaderLabels([' Input Shapes ', ' Time Point ', ' Kernel Width ', ' Shape Index ', ' Weight '])
     self.tableWidget_inputShapeParameters.setColumnWidth(0, 400)
     horizontalHeader = self.tableWidget_inputShapeParameters.horizontalHeader()
     horizontalHeader.setStretchLastSection(False)
@@ -162,7 +169,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.tableWidget_inputShapeParameters.setRowCount(0)
 
     # Reset Time Point Parameters
-    self.defaultTimePointRange.setChecked(True)
+    #self.defaultTimePointRange.setChecked(True)
     self.t0.blockSignals(True)
     self.tn.blockSignals(True)
     self.tn.setMinimum(0)
@@ -172,6 +179,9 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.t0.blockSignals(False)
     self.tn.blockSignals(False)
     self.T.value = 20
+    self.t0.enabled = True
+    self.tn.enabled = True
+    self.defaultTimePointRange.visible = False
 
     # Reset deformation parameters
     self.defKernelWidth.value = 0
@@ -241,19 +251,31 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
           labelVTKFile.setAlignment(0x84)
           self.tableWidget_inputShapeParameters.setCellWidget(row, 0, labelVTKFile)
 
-          # Column 1-2-3-4:
+          # Column 1-2-3-4: (Time Point, Sigma W, Tris, Weight)
+          # We might want to consider using different UI elements for Time Point and Kernel Width that do not have explicit ranges
           for column in range(1,5):
             widget = qt.QWidget()
             layout = qt.QHBoxLayout(widget)
-            if not column == 2:
+            
+            # If this is the 'Shape Index' column we limit this to an integer
+            if (column == 3):
               spinBox = qt.QSpinBox()
-              if column == 1:
-                spinBox.connect('valueChanged(int)', self.onDefaultTimePointRange)
-              if column == 4:
-                spinBox.value = 1
+              spinBox.setRange(0,1000)
+              spinBox.value = 0
+            # The rest of the columns are doubles 
             else:
               spinBox = qt.QDoubleSpinBox()
-            spinBox.setMinimum(0)
+              
+              if column == 1: # Time Point
+                spinBox.connect('valueChanged(double)', self.onSetTimePointRange)
+                spinBox.setRange(-1e10, 1e10)
+              if column == 2: # Kernel Width
+                spinBox.setRange(0.001, 1e10)
+              if column == 4: # Weight
+                spinBox.value = 1
+                spinBox.setRange(0,1)
+                spinBox.setSingleStep(0.1);
+
             layout.addWidget(spinBox)
             layout.setAlignment(0x84)
             layout.setContentsMargins(0, 0, 0, 0)
@@ -262,33 +284,36 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
 
           row = row + 1
 
-  def onEnableTimePointRange(self):
-    # Enable/Disable the time point range spinboxes
-    self.t0.enabled = not self.defaultTimePointRange.checkState()
-    self.tn.enabled = not self.defaultTimePointRange.checkState()
+  # I don't see a reason for requiring a user to uncheck a box to set t0 and tn (James)
+  
+  #def onEnableTimePointRange(self):
+  #  # Enable/Disable the time point range spinboxes
+  #  self.t0.enabled = not self.defaultTimePointRange.checkState()
+  #  self.tn.enabled = not self.defaultTimePointRange.checkState()
 
-    # Enable/Disable the auto set of the time point range
-    table = self.tableWidget_inputShapeParameters
-    for row in range(table.rowCount):
-      widget = table.cellWidget(row, 1)
-      tuple = widget.children()
-      spinbox = tuple[1]
-      spinbox.blockSignals(not self.defaultTimePointRange.checkState())
+  #  # Enable/Disable the auto set of the time point range
+  #  table = self.tableWidget_inputShapeParameters
+  #  for row in range(table.rowCount):
+  #    widget = table.cellWidget(row, 1)
+  #    tuple = widget.children()
+  #    spinbox = tuple[1]
+  #    spinbox.blockSignals(not self.defaultTimePointRange.checkState())
 
-    # If the default value of the time point range is checked, set them
-    if self.defaultTimePointRange.checkState():
-      self.onDefaultTimePointRange()
+  #  # If the default value of the time point range is checked, set them
+  #  #if self.defaultTimePointRange.checkState():
+  #  #  self.onDefaultTimePointRange()
 
-  def onDefaultTimePointRange(self):
+  
+  def onSetTimePointRange(self):
     self.Logic.sortInputCasesAges()
     self.t0.value = self.Logic.age_list[0]
     self.tn.value = self.Logic.age_list[-1]
 
-  def onSetMaximumStartingTimePoint(self):
-    self.t0.setMaximum(self.tn.value)
+  #def onSetMaximumStartingTimePoint(self):
+  #  self.t0.setMaximum(self.tn.value)
 
-  def onSetMinimumEndingTimePoint(self):
-    self.tn.setMinimum(self.t0.value)
+  #def onSetMinimumEndingTimePoint(self):
+  #  self.tn.setMinimum(self.t0.value)
 
   def onApplyButton(self):
     if self.applyButton.text == "Run Shape4D":

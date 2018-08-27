@@ -125,28 +125,49 @@
      <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
-     <layout class="QFormLayout" name="formLayout_2">
+     <layout class="QFormLayout" name="horizontalLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="label_TimePointRange">
         <property name="text">
-         <string>Time Point Range:</string>
+         <string>Time point range: </string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_NumberOfTimepoints">
         <property name="text">
-         <string>Time Point Number: </string>
+         <string>Number of time points: </string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
        <widget class="QWidget" name="widget_TimePointRange" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
-          <widget class="QSpinBox" name="spinBox_StartingTimePoint">
+          <widget class="QDoubleSpinBox" name="spinBox_StartingTimePoint">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>10</height>
+            </size>
+           </property>
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Set the starting time point for the registration&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -157,9 +178,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="spinBox_EndingTimePoint">
+          <widget class="QDoubleSpinBox" name="spinBox_EndingTimePoint">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>10</height>
+            </size>
+           </property>
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Set the ending time point for the registration&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -184,6 +217,18 @@
       </item>
       <item row="1" column="1">
        <widget class="QSpinBox" name="spinBox_NumberOfTimepoints">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>118</width>
+          <height>10</height>
+         </size>
+        </property>
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans Mono'; color:#000000;&quot;&gt;Set the number of time points for time discretization.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
