@@ -145,7 +145,19 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.groupBox_RegressionTimePointRange = self.getWidget('groupBox_RegressionTimePointRange')
     self.t0 = self.getWidget('spinBox_StartingTimePoint')
     self.tn = self.getWidget('spinBox_EndingTimePoint')
-    self.defaultTimePointRange = self.getWidget('checkBox_DefaultTimePointRange')
+    
+    self.t0.blockSignals(True)
+    self.tn.blockSignals(True)
+    self.t0.enabled = True
+    self.tn.enabled = True
+    self.t0.setMinimum(-9999999)
+    self.t0.setMaximum(9999999)
+    self.tn.setMinimum(-9999999)
+    self.tn.setMaximum(9999999)
+    self.t0.blockSignals(False)
+    self.tn.blockSignals(False)
+    
+    #self.defaultTimePointRange = self.getWidget('checkBox_DefaultTimePointRange')
     self.pushButton_RegressionPlot = self.getWidget('pushButton_RegressionPlot')
 
     # Connect Functions
@@ -177,7 +189,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.PathLineEdit_RegressionInputShapesCSV.connect('currentPathChanged(const QString)', self.onCurrentRegressionInputShapesCSVPathChanged)
     self.t0.connect('valueChanged(int)', self.onSetMaximumStartingTimePoint)
     self.tn.connect('valueChanged(int)', self.onSetMinimumEndingTimePoint)
-    self.defaultTimePointRange.connect('clicked(bool)', self.onEnableTimePointRange)
+    #self.defaultTimePointRange.connect('clicked(bool)', self.onEnableTimePointRange)
     self.CollapsibleButton_ReressionPlot.connect('clicked()',
                                                   lambda: self.onSelectedCollapsibleButtonOpen(
                                                     self.CollapsibleButton_ReressionPlot))
@@ -235,7 +247,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       MRMLUtility.removeMRMLNode(self.displaynodesequence)
 
     # Reset Regression's Time Point
-    self.defaultTimePointRange.setChecked(True)
+    #self.defaultTimePointRange.setChecked(True)
     self.t0.blockSignals(True)
     self.tn.blockSignals(True)
     self.tn.setMinimum(0)
@@ -264,8 +276,9 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     
     inputShapesDirectory = self.inputDirectoryButton.directory.encode('utf-8')
     
+    pathGlob = os.path.join(inputShapesDirectory, '*final_time*.vtk')
     # Search for *final_time*.vtk, which is the final sequence after estimation
-    finalShapeSequence = glob.glob(inputShapesDirectory + '/*final_time*.vtk')
+    finalShapeSequence = glob.glob(pathGlob)
     
     if (len(finalShapeSequence) > 0):
       
@@ -273,6 +286,11 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       suffixLocation = typicalFilename.rfind('_')
       rootname = os.path.basename(typicalFilename[0:suffixLocation+1])
       self.lineEdit_shapesRootname.text = rootname
+      
+    # Update the Regression's Plot 'Input Shapes CSV' to this directory and default name CSV file
+    csvPath = os.path.join(inputShapesDirectory, 'CSVInputshapesparameters.csv')
+    self.PathLineEdit_RegressionInputShapesCSV.setCurrentPath(csvPath)
+    self.onCurrentRegressionInputShapesCSVPathChanged()
       
 
   # Only one tab can be displayed at the same time:
@@ -373,6 +391,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
   def loadModels(self):
     inputDirectory = self.inputDirectoryButton.directory.encode('utf-8')
     for number, shapeBasename in self.InputShapes.items():
+      
       shapeRootname = os.path.splitext(os.path.basename(shapeBasename))[0]
       model = MRMLUtility.loadMRMLNode(shapeRootname, inputDirectory, shapeBasename, 'ModelFile')
       self.RegressionModels[number] = model
@@ -424,6 +443,11 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.sequenceBrowserSeekWidget.setMRMLSequenceBrowserNode(self.sequencebrowser)
     self.sequenceBrowserPlayWidget.setMRMLSequenceBrowserNode(self.sequencebrowser)
     self.sequencebrowser.SetRecording(self.modelsequence, True)
+
+    layoutManager = slicer.app.layoutManager()
+    threeDWidget = layoutManager.threeDWidget(0)
+    threeDView = threeDWidget.threeDView()
+    threeDView.resetFocalPoint()
 
   ### Update Sequence Color Functions
 
@@ -878,6 +902,8 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     # Create two PlotDataNodes
     ShapeRegressionPlotDataNode = MRMLUtility.createNewMRMLNode("ShapeRegressionPlotDataNode", slicer.vtkMRMLPlotDataNode())
     ShapeInputPlotDataNode = MRMLUtility.createNewMRMLNode("ShapeInputPlotDataNode", slicer.vtkMRMLPlotDataNode())
+    #ShapeRegressionPlotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", "ShapeRegressionPlotSeriesNode")
+    #ShapeInputPlotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", "ShapeInputPlotSeriesNode")
 
     # Set and Observe the MRMLTableNodeID
     ShapeRegressionPlotDataNode.SetName(arrShapeRegression.GetName())
@@ -885,16 +911,20 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     ShapeRegressionPlotDataNode.SetAndObserveTableNodeID(tableNode1.GetID())
     ShapeRegressionPlotDataNode.SetXColumnName(tableNode1.GetColumnName(0))
     ShapeRegressionPlotDataNode.SetYColumnName(tableNode1.GetColumnName(1))
+    #ShapeRegressionPlotDataNode.SetType('line')
+    ShapeRegressionPlotDataNode.SetLineWidth(3.0)
+    
     ShapeInputPlotDataNode.SetName(arrShapeInput.GetName())
     ShapeInputPlotDataNode.SetYColumnName("Shape Volumes")
     ShapeInputPlotDataNode.SetAndObserveTableNodeID(tableNode2.GetID())
     ShapeInputPlotDataNode.SetXColumnName(tableNode2.GetColumnName(0))
     ShapeInputPlotDataNode.SetYColumnName(tableNode2.GetColumnName(1))
+    #ShapeInputPlotDataNode.SetType('scatter')
 
     # Add and Observe plots IDs in PlotChart
     plotChartNode.AddAndObservePlotDataNodeID(ShapeRegressionPlotDataNode.GetID())
     plotChartNode.AddAndObservePlotDataNodeID(ShapeInputPlotDataNode.GetID())
-
+         
     # Create PlotView node
     pvns = slicer.mrmlScene.GetNodesByClass('vtkMRMLPlotViewNode')
     pvns.InitTraversal()
@@ -907,15 +937,18 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     plotChartNode.SetAttribute('XAxisLabelName', 'Time Points (ages)')
     plotChartNode.SetAttribute('YAxisLabelName', 'Shape Volume')
     plotChartNode.SetAttribute('Type', 'Scatter')
+    
 
-  def onEnableTimePointRange(self):
-    # Enable/Disable the time point range spinboxes
-    self.t0.enabled = not self.defaultTimePointRange.checkState()
-    self.tn.enabled = not self.defaultTimePointRange.checkState()
+  # I don't see any reason to for having to click to change time values (James)
 
-    # If the default value of the time point range is checked, set them
-    if self.defaultTimePointRange.checkState():
-      self.setDefaultTimePointRange()
+  #def onEnableTimePointRange(self):
+  #  # Enable/Disable the time point range spinboxes
+  #  self.t0.enabled = not self.defaultTimePointRange.checkState()
+  #  self.tn.enabled = not self.defaultTimePointRange.checkState()
+
+  #  # If the default value of the time point range is checked, set them
+  #  if self.defaultTimePointRange.checkState():
+  #    self.setDefaultTimePointRange()
 
   def onCurrentRegressionInputShapesCSVPathChanged(self):
     if os.path.exists(self.PathLineEdit_RegressionInputShapesCSV.currentPath):
@@ -924,26 +957,22 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
 
       self.groupBox_RegressionTimePointRange.enabled = True
 
-      # If the default value of the time point range is checked, set them
-      if self.defaultTimePointRange.checkState():
-        self.setDefaultTimePointRange()
+      self.setDefaultTimePointRange()
     else:
       self.groupBox_RegressionTimePointRange.enabled = False
 
   def setDefaultTimePointRange(self):
     timepts_sorted = sorted(self.timepts)
-    # Set up the time point values by default
-    if self.defaultTimePointRange.checkState():
-      self.tn.setMinimum(0)
-      self.t0.setMaximum(999999999)
-      self.t0.blockSignals(True)
-      self.tn.blockSignals(True)
-      self.t0.value = timepts_sorted[0]
-      self.tn.setMinimum(self.t0.value)
-      self.tn.value = timepts_sorted[-1]
-      self.t0.setMaximum(self.tn.value)
-      self.t0.blockSignals(False)
-      self.tn.blockSignals(False)
+    self.tn.setMinimum(0)
+    self.t0.setMaximum(999999999)
+    self.t0.blockSignals(True)
+    self.tn.blockSignals(True)
+    self.t0.value = timepts_sorted[0]
+    self.tn.setMinimum(self.t0.value)
+    self.tn.value = timepts_sorted[-1]
+    self.t0.setMaximum(self.tn.value)
+    self.t0.blockSignals(False)
+    self.tn.blockSignals(False)
 
   def onSetMaximumStartingTimePoint(self):
     self.t0.setMaximum(self.tn.value)
@@ -1046,7 +1075,7 @@ class RegressionVisualizationLogic(ScriptedLoadableModuleLogic):
       allRows = csv.reader(csvfile, delimiter=',', quotechar='|')
       for row in allRows:
         shapePaths.append(row[0].strip())
-        timepts.append(int( row[1].strip() ))
+        timepts.append(float( row[1].strip() ))
 
     return shapePaths, timepts
 

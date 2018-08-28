@@ -55,7 +55,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Input Directory &lt;br/&gt;The input directory should contain the time-regressed shapes computed by RegressionComputation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Input Directory</string>
+            <string>Input directory: </string>
            </property>
           </widget>
          </item>
@@ -65,7 +65,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Rootname of the time-regressed shapes: &lt;br/&gt;Each  time-regressed shape computed by RegressionComputation has a rootname composed by: &lt;br/&gt;- the &lt;span style=&quot; font-style:italic;&quot;&gt;prefix&lt;/span&gt; specified in RegressionComputation followed by &lt;span style=&quot; font-style:italic;&quot;&gt;final_time_&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Rootname</string>
+            <string>Rootname: </string>
            </property>
           </widget>
          </item>
@@ -505,7 +505,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;CSV file containing the input shapes used in RegressionComputation to compute the time-regressed shapes&lt;br/&gt;- This CSV file (&lt;span style=&quot; font-style:italic;&quot;&gt;CSVInputshapesparameters.csv) &lt;/span&gt;has been created automatically in the RegressionComputation output folder&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Input Shapes CSV: </string>
+            <string>Input shapes CSV: </string>
            </property>
           </widget>
          </item>
@@ -525,27 +525,27 @@
          <string>Regression's Time Points</string>
         </property>
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QLabel" name="label_TimePointRange">
            <property name="text">
-            <string>Time Point Range</string>
+            <string>Time point range: </string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="spinBox_StartingTimePoint">
+          <widget class="QDoubleSpinBox" name="spinBox_StartingTimePoint">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="spinBox_EndingTimePoint">
+          <widget class="QDoubleSpinBox" name="spinBox_EndingTimePoint">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -555,7 +555,10 @@
             <string>default value</string>
            </property>
            <property name="checked">
-            <bool>true</bool>
+            <bool>false</bool>
+           </property>
+           <property name="visible">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
