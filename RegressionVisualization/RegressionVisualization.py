@@ -9,6 +9,7 @@ import platform
 import time
 import urllib
 import shutil
+import glob
 from ShapeRegressionUtilities import *
 
 class colorMapStruct(object):
@@ -57,7 +58,7 @@ class RegressionVisualization(ScriptedLoadableModule):
     self.parent.title = "RegressionVisualization"
     self.parent.categories = ["Shape Regression"]
     self.parent.dependencies = []
-    self.parent.contributors = ["Laura Pascal (Kitware Inc.), Beatriz Paniagua (Kitware Inc.)"]
+    self.parent.contributors = ["Laura Pascal (Kitware Inc.), James Fishbaugh (NYU Tandon School of Engineering), Beatriz Paniagua (Kitware Inc.)"]
     self.parent.helpText = """
     * Plot the time-regressed shape volume according to the linear variable\n
     * Visualize the sequence of the time-regressed shapes generated
@@ -156,6 +157,8 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.CollapsibleButton_SequenceVisualizationOption.connect('clicked()',
                                                   lambda: self.onSelectedCollapsibleButtonOpen(
                                                     self.CollapsibleButton_SequenceVisualizationOption))
+                                                    
+    self.inputDirectoryButton.connect('directoryChanged(const QString &)', self.onInputShapesDirectoryChanged)
 
     self.comboBox_ColorMapChoice.connect('currentIndexChanged(int)', self.onUpdateSequenceColorMap)
     self.comboBox_3DColorMapChoice.connect('currentIndexChanged(int)', self.onUpdateSequence3DColorMap)
@@ -255,6 +258,22 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
         if resulting_widget:
           return resulting_widget
     return None
+    
+  # When the input shape directory is updated, we will try to auto populate the rootname
+  def onInputShapesDirectoryChanged(self):
+    
+    inputShapesDirectory = self.inputDirectoryButton.directory.encode('utf-8')
+    
+    # Search for *final_time*.vtk, which is the final sequence after estimation
+    finalShapeSequence = glob.glob(inputShapesDirectory + '/*final_time*.vtk')
+    
+    if (len(finalShapeSequence) > 0):
+      
+      typicalFilename = finalShapeSequence[0]
+      suffixLocation = typicalFilename.rfind('_')
+      rootname = os.path.basename(typicalFilename[0:suffixLocation+1])
+      self.lineEdit_shapesRootname.text = rootname
+      
 
   # Only one tab can be displayed at the same time:
   #   When one tab is opened all the other tabs are closed
@@ -354,7 +373,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
   def loadModels(self):
     inputDirectory = self.inputDirectoryButton.directory.encode('utf-8')
     for number, shapeBasename in self.InputShapes.items():
-      shapeRootname = shapeBasename.split(".vtk")[0]
+      shapeRootname = os.path.splitext(os.path.basename(shapeBasename))[0]
       model = MRMLUtility.loadMRMLNode(shapeRootname, inputDirectory, shapeBasename, 'ModelFile')
       self.RegressionModels[number] = model
 
