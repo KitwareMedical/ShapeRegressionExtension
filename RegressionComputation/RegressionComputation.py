@@ -523,7 +523,7 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
         parameters_sorted[index].append(spinbox.value)
 
     # Write the parameters needed in a CSV file
-    CSVInputshapesparametersfilepath = os.path.join(outputDirectory, "CVSInputshapesparameters.csv")
+    CSVInputshapesparametersfilepath = os.path.join(outputDirectory, "CSVInputshapesparameters.csv")
     file = open(CSVInputshapesparametersfilepath, 'w')
     cw = csv.writer(file, delimiter=',')
     for index in range(len(parameters_sorted)):
