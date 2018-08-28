@@ -8,6 +8,7 @@ import csv
 import logging
 from ShapeRegressionUtilities import *
 import urllib
+import re
 
 #
 # RegressionComputation
@@ -276,8 +277,15 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
         initSigmaW = int(smallestRange*0.50)
         allShapeSigmaWs.append(initSigmaW)
         
+        # Try to extract the time point as a suffix
+        curTimePoint = 0.0
+        numsInFilename = re.findall(r'[-+]?\d*\.\d+|\d+', curFile)
+        if (len(numsInFilename) > 0):
+          curTimePoint = numsInFilename[-1]   # We assume the final number in the filename is the time point
+        
         # Column 0:
-        rootname = os.path.basename(curFile).split(".")[0]
+        #rootname = os.path.basename(curFile).split(".")[0]
+        rootname = os.path.splitext(os.path.basename(curFile))[0]
         labelVTKFile = qt.QLabel(rootname)
         labelVTKFile.setAlignment(0x84)
         self.tableWidget_inputShapeParameters.setCellWidget(row, 0, labelVTKFile)
@@ -298,6 +306,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
             spinBox = qt.QDoubleSpinBox()
             
             if column == 1: # Time Point
+              spinBox.value = float(curTimePoint)
               spinBox.connect('valueChanged(double)', self.onSetTimePointRange)
               spinBox.setRange(-1e10, 1e10)
             if column == 2: # Kernel Width
@@ -318,6 +327,9 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
 
     # We can set a default for deformation kernel width as smallest shape kernel
     self.defKernelWidth.value = min(allShapeSigmaWs)
+    
+    # Update the time range (if time point suffixes provided initialization)
+    self.onSetTimePointRange()
 
   # I don't see a reason for requiring a user to uncheck a box to set t0 and tn (James)
   
@@ -431,34 +443,6 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     fileContents += "<?xml version=\"1.0\">\n"
     fileContents += "<experiment name=\"" + experimentName + "\">\n"
 
-    fileContents += "  <algorithm name=\"RegressionVelocity\">\n"
-    fileContents += "    <source>\n"
-    fileContents += "      <input>\n"
-    fileContents += "        <shape> " + self.shapePaths[0] + " </shape>\n"
-    fileContents += "      </input>\n"
-    fileContents += "      <sigmaV> " + str(self.interface.defKernelWidth.value) + " </sigmaV>\n"
-    fileContents += "      <gammaR> " + str(self.interface.regularityWeight.value) + " </gammaR>\n"
-    fileContents += "      <t0> " + str(self.interface.t0.value) + " </t0>\n"
-    fileContents += "      <tn> " + str(self.interface.tn.value) + " </tn>\n"
-    fileContents += "      <T> " + str(self.interface.T.value) + " </T>\n"
-    fileContents += "      <kernelType> " + self.interface.kernelType.currentText + " </kernelType>\n"
-    fileContents += "      <estimateBaseline> 0 </estimateBaseline>\n"
-    fileContents += "      <useFista> 0 </useFista>\n"
-    fileContents += "      <maxIters> 250 </maxIters>\n"
-    fileContents += "      <breakRatio> 1e-6 </breakRatio>\n"
-    fileContents += "    </source>\n"
-    fileContents += "    <targets>\n"
-    fileContents += "      <target>\n"
-    fileContents += "        <shape> " + self.shapePaths[len(self.shapePaths)-1] + " </shape>\n"
-    fileContents += "        <type> SURFACE </type>\n"
-    fileContents += "        <tris> 0 </tris>\n"
-    fileContents += "        <sigmaW> " + self.sigmaWs[len(self.sigmaWs)-1] + " </sigmaW>\n"
-    fileContents += "        <timept> " + self.timepts[len(self.timepts)-1] + " </timept>\n"
-    fileContents += "        <weight> 1.0 </weight>\n"
-    fileContents += "      </target>\n"
-    fileContents += "    </targets>\n"
-    fileContents += "  </algorithm>\n"
-
     fileContents += "  <algorithm name=\"RegressionAccel\">\n"
     fileContents += "    <source>\n"
     fileContents += "      <input>\n"
@@ -470,8 +454,8 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     fileContents += "      <tn> " + str(self.interface.tn.value) + " </tn>\n"
     fileContents += "      <T> " + str(self.interface.T.value) + " </T>\n"
     fileContents += "      <kernelType> " + self.interface.kernelType.currentText + " </kernelType>\n"
-    fileContents += "      <useInitV0> 1 </useInitV0>\n"
-    fileContents += "      <v0weight> 1 </v0weight>\n"
+    fileContents += "      <useInitV0> 0 </useInitV0>\n"
+    fileContents += "      <v0weight> 0.0 </v0weight>\n"
     fileContents += "      <estimateBaseline> " + str(int(self.interface.estimateBaseline.checkState())) + " </estimateBaseline>\n"
     fileContents += "      <useFista> " + str(int(useFista)) + " </useFista>\n"
     fileContents += "      <maxIters> " + str(self.interface.maxIters.value) + " </maxIters>\n"
@@ -574,12 +558,6 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
       return False
 
     return True
-
-    # print self.shapePaths
-    # print self.timepts
-    # print self.sigmaWs
-    # print self.shapeIndices
-    # print self.weights
 
   def onCLIModuleModified(self, cli_node, event):
     statusForNode = None
