@@ -1,16 +1,10 @@
-import os, sys
-import unittest
+import os
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
-import logging
+# from slicer.util import VTKObservationMixin
 import csv
-from slicer.util import VTKObservationMixin
-import platform
-import time
-import urllib
-import shutil
 import glob
-from ShapeRegressionUtilities import *
+from ShapeRegressionUtilities import MRMLUtility
 
 class colorMapStruct(object):
   def __init__(self):
@@ -145,7 +139,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.groupBox_RegressionTimePointRange = self.getWidget('groupBox_RegressionTimePointRange')
     self.t0 = self.getWidget('spinBox_StartingTimePoint')
     self.tn = self.getWidget('spinBox_EndingTimePoint')
-    
+
     self.t0.blockSignals(True)
     self.tn.blockSignals(True)
     self.t0.enabled = True
@@ -156,7 +150,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.tn.setMaximum(9999999)
     self.t0.blockSignals(False)
     self.tn.blockSignals(False)
-    
+
     #self.defaultTimePointRange = self.getWidget('checkBox_DefaultTimePointRange')
     self.pushButton_RegressionPlot = self.getWidget('pushButton_RegressionPlot')
 
@@ -169,7 +163,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.CollapsibleButton_SequenceVisualizationOption.connect('clicked()',
                                                   lambda: self.onSelectedCollapsibleButtonOpen(
                                                     self.CollapsibleButton_SequenceVisualizationOption))
-                                                    
+
     self.inputDirectoryButton.connect('directoryChanged(const QString &)', self.onInputShapesDirectoryChanged)
 
     self.comboBox_ColorMapChoice.connect('currentIndexChanged(int)', self.onUpdateSequenceColorMap)
@@ -270,28 +264,28 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
         if resulting_widget:
           return resulting_widget
     return None
-    
+
   # When the input shape directory is updated, we will try to auto populate the rootname
   def onInputShapesDirectoryChanged(self):
-    
+
     inputShapesDirectory = self.inputDirectoryButton.directory.encode('utf-8')
-    
+
     pathGlob = os.path.join(inputShapesDirectory, '*final_time*.vtk')
     # Search for *final_time*.vtk, which is the final sequence after estimation
     finalShapeSequence = glob.glob(pathGlob)
-    
+
     if (len(finalShapeSequence) > 0):
-      
+
       typicalFilename = finalShapeSequence[0]
       suffixLocation = typicalFilename.rfind('_')
       rootname = os.path.basename(typicalFilename[0:suffixLocation+1])
       self.lineEdit_shapesRootname.text = rootname
-      
+
     # Update the Regression's Plot 'Input Shapes CSV' to this directory and default name CSV file
     csvPath = os.path.join(inputShapesDirectory, 'CSVInputshapesparameters.csv')
     self.PathLineEdit_RegressionInputShapesCSV.setCurrentPath(csvPath)
     self.onCurrentRegressionInputShapesCSVPathChanged()
-      
+
 
   # Only one tab can be displayed at the same time:
   #   When one tab is opened all the other tabs are closed
@@ -391,7 +385,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
   def loadModels(self):
     inputDirectory = self.inputDirectoryButton.directory.encode('utf-8')
     for number, shapeBasename in self.InputShapes.items():
-      
+
       shapeRootname = os.path.splitext(os.path.basename(shapeBasename))[0]
       model = MRMLUtility.loadMRMLNode(shapeRootname, inputDirectory, shapeBasename, 'ModelFile')
       self.RegressionModels[number] = model
@@ -913,7 +907,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     ShapeRegressionPlotDataNode.SetYColumnName(tableNode1.GetColumnName(1))
     #ShapeRegressionPlotDataNode.SetType('line')
     ShapeRegressionPlotDataNode.SetLineWidth(3.0)
-    
+
     ShapeInputPlotDataNode.SetName(arrShapeInput.GetName())
     ShapeInputPlotDataNode.SetYColumnName("Shape Volumes")
     ShapeInputPlotDataNode.SetAndObserveTableNodeID(tableNode2.GetID())
@@ -924,7 +918,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     # Add and Observe plots IDs in PlotChart
     plotChartNode.AddAndObservePlotDataNodeID(ShapeRegressionPlotDataNode.GetID())
     plotChartNode.AddAndObservePlotDataNodeID(ShapeInputPlotDataNode.GetID())
-         
+
     # Create PlotView node
     pvns = slicer.mrmlScene.GetNodesByClass('vtkMRMLPlotViewNode')
     pvns.InitTraversal()
@@ -937,7 +931,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     plotChartNode.SetAttribute('XAxisLabelName', 'Time Points (ages)')
     plotChartNode.SetAttribute('YAxisLabelName', 'Shape Volume')
     plotChartNode.SetAttribute('Type', 'Scatter')
-    
+
 
   # I don't see any reason to for having to click to change time values (James)
 
