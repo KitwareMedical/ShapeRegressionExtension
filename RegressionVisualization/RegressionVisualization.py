@@ -1,10 +1,9 @@
-import os
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
-# from slicer.util import VTKObservationMixin
 import csv
 import glob
-from ShapeRegressionUtilities import MRMLUtility
+import logging
+import os
 
 class colorMapStruct(object):
   def __init__(self):
@@ -52,7 +51,7 @@ class RegressionVisualization(ScriptedLoadableModule):
     self.parent.title = "RegressionVisualization"
     self.parent.categories = ["Shape Regression"]
     self.parent.dependencies = []
-    self.parent.contributors = ["Laura Pascal (Kitware Inc.), James Fishbaugh (NYU Tandon School of Engineering), Beatriz Paniagua (Kitware Inc.)"]
+    self.parent.contributors = ["Laura Pascal (Kitware Inc.), James Fishbaugh (NYU Tandon School of Engineering), Pablo Hernandez (Kitware Inc.), Beatriz Paniagua (Kitware Inc.)"]
     self.parent.helpText = """
     * Plot the time-regressed shape volume according to the linear variable\n
     * Visualize the sequence of the time-regressed shapes generated
@@ -223,22 +222,11 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     #   Reset the regression input shapes CSV path
     self.PathLineEdit_RegressionInputShapesCSV.setCurrentPath(" ")
 
-    # Reset of the global variable
-    self.InputShapes = dict()
-    self.RegressionModels = dict()
-    self.commonColorMapInformation = dict()
-    if not self.colorNodeDict == None:
-      MRMLUtility.removeMRMLNodes(self.colorNodeDict.values())
-    self.colorNodeDict = dict()
-    self.currentSequenceColorMap = None
+    # Remove any existing sequence node
+    self.removeExistingSequenceNodes()
 
-    # Remove any sequence already existing
-    if not self.modelsequence == None:
-      MRMLUtility.removeMRMLNode(self.modelsequence)
-    if not self.sequencebrowser == None:
-      MRMLUtility.removeMRMLNode(self.sequencebrowser)
-    if not self.displaynodesequence == None:
-      MRMLUtility.removeMRMLNode(self.displaynodesequence)
+    # Reset of the global variable
+    self.resetGlobalState()
 
     # Reset Regression's Time Point
     #self.defaultTimePointRange.setChecked(True)
@@ -298,31 +286,40 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
         collapsibleButton.setChecked(False)
       selectedCollapsibleButton.setChecked(True)
 
-
-  def onSequenceCreation(self):
+  def removeExistingSequenceNodes(self):
     # Remove any sequence already existing
     if not self.modelsequence == None:
-      MRMLUtility.removeMRMLNode(self.modelsequence)
+      slicer.mrmlScene.RemoveNode(self.modelsequence)
     if not self.sequencebrowser == None:
-      MRMLUtility.removeMRMLNode(self.sequencebrowser)
+      slicer.mrmlScene.RemoveNode(self.sequencebrowser)
     if not self.displaynodesequence == None:
-      MRMLUtility.removeMRMLNode(self.displaynodesequence)
-    self.modelsequence = MRMLUtility.createNewMRMLNode("modelsequence", slicer.vtkMRMLSequenceNode())
-    self.sequencebrowser = MRMLUtility.createNewMRMLNode("sequencebrowser", slicer.vtkMRMLSequenceBrowserNode())
-    self.displaynodesequence = MRMLUtility.createNewMRMLNode("displaynodesequence", slicer.vtkMRMLSequenceNode())
+      slicer.mrmlScene.RemoveNode(self.displaynodesequence)
+
+  def createSequenceNodes(self):
+    self.modelsequence = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSequenceNode", "modelsequence")
+    self.sequencebrowser = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSequenceBrowserNode", "sequencebrowser")
+    self.displaynodesequence = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSequenceNode", "displaynodesequence")
     self.displaynodesequence.SetHideFromEditors(0)
 
+  def resetSequences(self):
+    self.removeExistingSequenceNodes()
+    self.createSequenceNodes()
+
+  def resetGlobalState(self):
     # Reset of the global variable
     self.InputShapes = dict()
     self.RegressionModels = dict()
     self.commonColorMapInformation = dict()
     if not self.colorNodeDict == None:
-      MRMLUtility.removeMRMLNodes(self.colorNodeDict.values())
+      for colorNode in self.colorNodeDict.values():
+        slicer.mrmlScene.RemoveNode(colorNode)
     self.colorNodeDict = dict()
     self.currentSequenceColorMap = None
 
-    # Store the shapes in a dictionary
-    self.InputShapes = dict()
+  def onSequenceCreation(self):
+    self.resetSequences()
+    self.resetGlobalState()
+
     inputDirectory = self.inputDirectoryButton.directory.encode('utf-8')
     shapesRootname = self.lineEdit_shapesRootname.text
     if shapesRootname == "":
@@ -370,7 +367,8 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.sequenceCreation()
 
     # Remove the models in Slicer
-    MRMLUtility.removeMRMLNodes(self.RegressionModels.values())
+    for model in self.RegressionModels.values():
+      slicer.mrmlScene.RemoveNode(model)
 
   def warningMessage(self, text, informativeText):
       messageBox = ctk.ctkMessageBox()
@@ -383,11 +381,15 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       messageBox.exec_()
 
   def loadModels(self):
+    """ Get models from files. Populate self.RegressionModels. """
     inputDirectory = self.inputDirectoryButton.directory.encode('utf-8')
     for number, shapeBasename in self.InputShapes.items():
-
-      shapeRootname = os.path.splitext(os.path.basename(shapeBasename))[0]
-      model = MRMLUtility.loadMRMLNode(shapeRootname, inputDirectory, shapeBasename, 'ModelFile')
+      # shapeRootname = os.path.splitext(os.path.basename(shapeBasename))[0]
+      fullPath = os.path.join(inputDirectory, shapeBasename)
+      success, model = slicer.util.loadModel(fullPath, returnNode=True)
+      logging.debug(model)
+      if not success:
+        logging.error("{} not found or is not a model.".format(fullPath) )
       self.RegressionModels[number] = model
 
   def colorMapsConfiguration(self):
@@ -401,16 +403,16 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       self.commonColorMapInformation[colormapName] = self.Logic.storeColormapInformation(colormapName, self.RegressionModels)
 
   def sequenceCreation(self):
-    print "Sequence Creation"
+    logging.debug("Sequence Creation")
 
     for number, model in self.RegressionModels.items():
 
       # Adding of the models to the model sequence
       self.modelsequence.SetDataNodeAtValue(model, str(number))
-      MRMLUtility.removeMRMLNode(model)
+      slicer.mrmlScene.RemoveNode(model)
 
       # Adding of the model display nodes to the model display node sequence
-      modeldisplay = MRMLUtility.createNewMRMLNode(model.GetName() + "-displayNode", slicer.vtkMRMLModelDisplayNode())
+      modeldisplay = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelDisplayNode", model.GetName() + "-displayNode")
 
       startingColor = self.ColorPickerButton_startingColor.color
       endingColor = self.ColorPickerButton_endingColor.color
@@ -419,7 +421,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       blue = float((startingColor.blue() + float((number * (endingColor.blue() - startingColor.blue()) ) / float(len(self.InputShapes))))/255)
       modeldisplay.SetColor(red, green, blue)
 
-      MRMLUtility.removeMRMLNode(modeldisplay)
+      slicer.mrmlScene.RemoveNode(modeldisplay)
       self.displaynodesequence.SetDataNodeAtValue(modeldisplay, str(number))
 
     # Adding of the sequences to the Sequence Browser
@@ -430,7 +432,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     # by the display proxy node
     modelProxyNode = self.sequencebrowser.GetProxyNode(self.modelsequence)
     modelDisplayProxyNode = self.sequencebrowser.GetProxyNode(self.displaynodesequence)
-    MRMLUtility.removeMRMLNode(modelProxyNode.GetDisplayNode())
+    slicer.mrmlScene.RemoveNode(modelProxyNode.GetDisplayNode())
     modelProxyNode.SetAndObserveDisplayNodeID(modelDisplayProxyNode.GetID())
 
     # Set the sequence browser for the sequence browser seek widget
@@ -447,7 +449,8 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
 
   def onUpdateSequenceColorMap(self):
     if self.comboBox_ColorMapChoice.currentText == "Solid Color":
-      MRMLUtility.removeMRMLNodes(self.colorNodeDict.values())
+      for colorNode in self.colorNodeDict.values():
+        slicer.mrmlScene.RemoveNode(colorNode)
       # UI
       self.CollapsibleGroupBox_CustomColorBar.setChecked(False)
       self.CollapsibleGroupBox_CustomScalarBar.setChecked(False)
@@ -539,7 +542,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     # Update the color of the model contained in the sequence
     self.sequencebrowser.RemoveSynchronizedSequenceNode(self.displaynodesequence.GetID())
     for number, model in self.RegressionModels.items():
-      modeldisplay = MRMLUtility.createNewMRMLNode(model.GetName() + "-displayNode", slicer.vtkMRMLModelDisplayNode())
+      modeldisplay = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelDisplayNode", model.GetName() + "-displayNode")
 
       startingColor = self.ColorPickerButton_startingColor.color
       endingColor = self.ColorPickerButton_endingColor.color
@@ -548,14 +551,14 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       blue = float((startingColor.blue() + float((number * (endingColor.blue() - startingColor.blue()) ) / float(len(self.InputShapes))))/255)
       modeldisplay.SetColor(red, green, blue)
       self.displaynodesequence.SetDataNodeAtValue(modeldisplay, str(number))
-      MRMLUtility.removeMRMLNode(modeldisplay)
+      slicer.mrmlScene.RemoveNode(modeldisplay)
 
     self.sequencebrowser.AddSynchronizedSequenceNodeID(self.displaynodesequence.GetID())
 
     # Replace display node that is previously created by the new display proxy node
     modelProxyNode = self.sequencebrowser.GetProxyNode(self.modelsequence)
     modelDisplayProxyNode = self.sequencebrowser.GetProxyNode(self.displaynodesequence)
-    MRMLUtility.removeMRMLNode(modelProxyNode.GetDisplayNode())
+    slicer.mrmlScene.RemoveNode(modelProxyNode.GetDisplayNode())
     modelProxyNode.SetAndObserveDisplayNodeID(modelDisplayProxyNode.GetID())
 
   # Update the color transfer function of the sequence
@@ -580,24 +583,26 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     if self.commonColorMapInformation[colormapName].numberOfComponents == 3:
       colormapName = colormapType + colormapName
     self.sequencebrowser.RemoveSynchronizedSequenceNode(self.displaynodesequence.GetID())
-    MRMLUtility.removeMRMLNodes(self.colorNodeDict.values())
+
+    for colorNode in self.colorNodeDict.values():
+      slicer.mrmlScene.RemoveNode(colorNode)
     for number, model in self.RegressionModels.items():
-      modeldisplay = MRMLUtility.createNewMRMLNode(model.GetName() + "-displayNode", slicer.vtkMRMLModelDisplayNode())
+      modeldisplay = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLModelDisplayNode", model.GetName() + "-displayNode")
       modeldisplay.ScalarVisibilityOn()
       modeldisplay.SetActiveScalarName(colormapName)
-      self.colorNodeDict[number] = MRMLUtility.createNewMRMLNode("BlueWhiteRed", slicer.vtkMRMLProceduralColorNode())
+      self.colorNodeDict[number] = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLProceduralColorNode", "BlueWhiteRed")
       self.colorNodeDict[number].SetAndObserveColorTransferFunction(DistanceMapTFunc)
       modeldisplay.SetScalarRangeFlag(slicer.vtkMRMLModelDisplayNode.UseColorNodeScalarRange)
       modeldisplay.SetAndObserveColorNodeID(self.colorNodeDict[number].GetID())
       self.displaynodesequence.SetDataNodeAtValue(modeldisplay, str(number))
-      MRMLUtility.removeMRMLNode(modeldisplay)
+      slicer.mrmlScene.RemoveNode(modeldisplay)
 
     self.sequencebrowser.AddSynchronizedSequenceNodeID(self.displaynodesequence.GetID())
 
     # Replace display node that is previously created by the new display proxy node
     modelProxyNode = self.sequencebrowser.GetProxyNode(self.modelsequence)
     modelDisplayProxyNode = self.sequencebrowser.GetProxyNode(self.displaynodesequence)
-    MRMLUtility.removeMRMLNode(modelProxyNode.GetDisplayNode())
+    slicer.mrmlScene.RemoveNode(modelProxyNode.GetDisplayNode())
     modelProxyNode.SetAndObserveDisplayNodeID(modelDisplayProxyNode.GetID())
 
   ### Sequence Range Functions
@@ -790,7 +795,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     # Set a Plot Layout
     layoutNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLLayoutNode")
     if layoutNode == False:
-      print " Unable to get layout node!"
+      logging.warning(" Unable to get layout node!")
       pass
     viewArray = layoutNode.GetViewArrangement()
     if not viewArray == slicer.vtkMRMLLayoutNode.SlicerLayoutConventionalPlotView \
@@ -801,7 +806,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       layoutNode.SetViewArrangement(slicer.vtkMRMLLayoutNode.SlicerLayoutConventionalPlotView)
 
     # Create a PlotChart node
-    plotChartNode = MRMLUtility.createNewMRMLNode("plotChartNode", slicer.vtkMRMLPlotChartNode())
+    plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode", "plotChartNode")
 
     # Remove columns / plots not selected from plotChartNode
     plotChartNode.RemoveAllPlotDataNodeIDs()
@@ -851,10 +856,10 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       table2.SetValue(i, 0, str( self.timepts[i] ))
 
       # Compute of the volume of each shape input
-      shapePaths_dir = os.path.split(self.shapePaths[i])[0]
-      shapePaths_rootname = os.path.split(self.shapePaths[i])[1].split(".")[0]
-      shapePaths_filename = os.path.split(self.shapePaths[i])[1]
-      model = MRMLUtility.loadMRMLNode(shapePaths_rootname, shapePaths_dir, shapePaths_filename, 'ModelFile')
+      # shapePaths_rootname = os.path.split(self.shapePaths[i])[1].split(".")[0]
+      # model = MRMLUtility.loadMRMLNode(shapePaths_rootname, shapePaths_dir, shapePaths_filename, 'ModelFile')
+      success, model = slicer.mrmlScene.loadModel(self.shapePaths[i], returnNode=True)
+      # model.SetName(shapePaths_rootname)
       polydata = model.GetPolyData()
       triangleFilter = vtk.vtkTriangleFilter()
       triangleFilter.SetInputData(polydata)
@@ -866,7 +871,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       volume = massProps.GetVolume()
       table2.SetValue(i, 1, volume)
 
-      MRMLUtility.removeMRMLNode(model)
+      slicer.mrmlScene.RemoveNode(model)
 
     for j in range(ShapeRegressionNumPoints):
 
@@ -888,14 +893,14 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       table1.SetValue(j, 1, volume)
 
     # Create a MRMLTableNode
-    tableNode1 = MRMLUtility.createNewMRMLNode("tableNode", slicer.vtkMRMLTableNode())
+    tableNode1 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "tableNode")
     tableNode1.SetAndObserveTable(table1)
-    tableNode2 = MRMLUtility.createNewMRMLNode("tableNode", slicer.vtkMRMLTableNode())
+    tableNode2 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "tableNode")
     tableNode2.SetAndObserveTable(table2)
 
     # Create two PlotDataNodes
-    ShapeRegressionPlotDataNode = MRMLUtility.createNewMRMLNode("ShapeRegressionPlotDataNode", slicer.vtkMRMLPlotDataNode())
-    ShapeInputPlotDataNode = MRMLUtility.createNewMRMLNode("ShapeInputPlotDataNode", slicer.vtkMRMLPlotDataNode())
+    ShapeRegressionPlotDataNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotDataNode", "ShapeRegressionPlotDataNode")
+    ShapeInputPlotDataNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotDataNode", "ShapeInputPlotDataNode")
     #ShapeRegressionPlotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", "ShapeRegressionPlotSeriesNode")
     #ShapeInputPlotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", "ShapeInputPlotSeriesNode")
 
