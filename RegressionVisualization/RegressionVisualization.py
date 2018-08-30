@@ -814,7 +814,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode", "plotChartNode")
 
     # Remove columns / plots not selected from plotChartNode
-    plotChartNode.RemoveAllPlotDataNodeIDs()
+    plotChartNode.RemoveAllPlotSeriesNodeIDs()
 
     # Creation of data for the plot
     table1 = vtk.vtkTable()
@@ -903,31 +903,31 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     tableNode2 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "tableNode")
     tableNode2.SetAndObserveTable(table2)
 
-    # Create two PlotDataNodes
-    ShapeRegressionPlotDataNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotDataNode", "ShapeRegressionPlotDataNode")
-    ShapeInputPlotDataNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotDataNode", "ShapeInputPlotDataNode")
+    # Create two PlotSeriesNodes
+    ShapeRegressionPlotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", "ShapeRegressionPlotSeriesNode")
+    ShapeInputPlotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", "ShapeInputPlotSeriesNode")
     #ShapeRegressionPlotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", "ShapeRegressionPlotSeriesNode")
     #ShapeInputPlotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", "ShapeInputPlotSeriesNode")
 
     # Set and Observe the MRMLTableNodeID
-    ShapeRegressionPlotDataNode.SetName(arrShapeRegression.GetName())
-    ShapeRegressionPlotDataNode.SetYColumnName("Shape Volumes")
-    ShapeRegressionPlotDataNode.SetAndObserveTableNodeID(tableNode1.GetID())
-    ShapeRegressionPlotDataNode.SetXColumnName(tableNode1.GetColumnName(0))
-    ShapeRegressionPlotDataNode.SetYColumnName(tableNode1.GetColumnName(1))
-    #ShapeRegressionPlotDataNode.SetType('line')
-    ShapeRegressionPlotDataNode.SetLineWidth(3.0)
+    ShapeRegressionPlotSeriesNode.SetName(arrShapeRegression.GetName())
+    ShapeRegressionPlotSeriesNode.SetYColumnName("Shape Volumes")
+    ShapeRegressionPlotSeriesNode.SetAndObserveTableNodeID(tableNode1.GetID())
+    ShapeRegressionPlotSeriesNode.SetXColumnName(tableNode1.GetColumnName(0))
+    ShapeRegressionPlotSeriesNode.SetYColumnName(tableNode1.GetColumnName(1))
+    #ShapeRegressionPlotSeriesNode.SetType('line')
+    ShapeRegressionPlotSeriesNode.SetLineWidth(3.0)
 
-    ShapeInputPlotDataNode.SetName(arrShapeInput.GetName())
-    ShapeInputPlotDataNode.SetYColumnName("Shape Volumes")
-    ShapeInputPlotDataNode.SetAndObserveTableNodeID(tableNode2.GetID())
-    ShapeInputPlotDataNode.SetXColumnName(tableNode2.GetColumnName(0))
-    ShapeInputPlotDataNode.SetYColumnName(tableNode2.GetColumnName(1))
-    #ShapeInputPlotDataNode.SetType('scatter')
+    ShapeInputPlotSeriesNode.SetName(arrShapeInput.GetName())
+    ShapeInputPlotSeriesNode.SetYColumnName("Shape Volumes")
+    ShapeInputPlotSeriesNode.SetAndObserveTableNodeID(tableNode2.GetID())
+    ShapeInputPlotSeriesNode.SetXColumnName(tableNode2.GetColumnName(0))
+    ShapeInputPlotSeriesNode.SetYColumnName(tableNode2.GetColumnName(1))
+    #ShapeInputPlotSeriesNode.SetType('scatter')
 
     # Add and Observe plots IDs in PlotChart
-    plotChartNode.AddAndObservePlotDataNodeID(ShapeRegressionPlotDataNode.GetID())
-    plotChartNode.AddAndObservePlotDataNodeID(ShapeInputPlotDataNode.GetID())
+    plotChartNode.AddAndObservePlotSeriesNodeID(ShapeRegressionPlotSeriesNode.GetID())
+    plotChartNode.AddAndObservePlotSeriesNodeID(ShapeInputPlotSeriesNode.GetID())
 
     # Create PlotView node
     pvns = slicer.mrmlScene.GetNodesByClass('vtkMRMLPlotViewNode')
