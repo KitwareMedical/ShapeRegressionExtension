@@ -135,7 +135,6 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     #   Regression's Plot
     self.CollapsibleButton_ReressionPlot = self.getWidget('CollapsibleButton_ReressionPlot')
     self.PathLineEdit_RegressionInputShapesCSV = self.getWidget('PathLineEdit_RegressionInputShapesCSV')
-    self.groupBox_RegressionTimePointRange = self.getWidget('groupBox_RegressionTimePointRange')
     self.t0 = self.getWidget('spinBox_StartingTimePoint')
     self.tn = self.getWidget('spinBox_EndingTimePoint')
 
@@ -271,8 +270,14 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
 
     # Update the Regression's Plot 'Input Shapes CSV' to this directory and default name CSV file
     csvPath = os.path.join(inputShapesDirectory, 'CSVInputshapesparameters.csv')
-    self.PathLineEdit_RegressionInputShapesCSV.setCurrentPath(csvPath)
-    self.onCurrentRegressionInputShapesCSVPathChanged()
+    print(csvPath)
+    if os.path.exists(csvPath):
+    
+      self.PathLineEdit_RegressionInputShapesCSV.setCurrentPath(csvPath)
+      # Read the CSV file containing the input used for the computation of the regression
+      self.readShapeObservationsCSV(csvPath)
+
+      self.setDefaultTimePointRange()
 
 
   # Only one tab can be displayed at the same time:
@@ -952,13 +957,13 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
   def onCurrentRegressionInputShapesCSVPathChanged(self):
     if os.path.exists(self.PathLineEdit_RegressionInputShapesCSV.currentPath):
       # Read the CSV file containing the input used for the computation of the regression
-      self.shapePaths, self.timepts = self.Logic.readCSVFile(self.PathLineEdit_RegressionInputShapesCSV.currentPath)
-
-      self.groupBox_RegressionTimePointRange.enabled = True
+      self.readShapeObservationsCSV(self.PathLineEdit_RegressionInputShapesCSV.currentPath)
 
       self.setDefaultTimePointRange()
-    else:
-      self.groupBox_RegressionTimePointRange.enabled = False
+      
+  def readShapeObservationsCSV(self, pathToCSV):
+  
+    self.shapePaths, self.timepts = self.Logic.readCSVFile(pathToCSV)    
 
   def setDefaultTimePointRange(self):
     timepts_sorted = sorted(self.timepts)

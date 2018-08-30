@@ -78,7 +78,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Creation of the time-regressed sequence&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Creation of Sequence</string>
+         <string>Create Sequence</string>
         </property>
        </widget>
       </item>
@@ -484,7 +484,7 @@
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Regression's Plot of:&lt;br/&gt;- the time-regressed volume according to the time&lt;br/&gt;- the input shape volume according to the time&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
-      <string>Regression's Plot</string>
+      <string>Regression Volume Plot</string>
      </property>
      <property name="checked">
       <bool>false</bool>
@@ -494,10 +494,6 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
-       <widget class="QGroupBox" name="groupBox_RegressionInputShapes">
-        <property name="title">
-         <string>Regression's Input Shapes</string>
-        </property>
         <layout class="QFormLayout" name="formLayout_5">
          <item row="0" column="0">
           <widget class="QLabel" name="label_RegressionInputShapesCSV">
@@ -505,7 +501,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;CSV file containing the input shapes used in RegressionComputation to compute the time-regressed shapes&lt;br/&gt;- This CSV file (&lt;span style=&quot; font-style:italic;&quot;&gt;CSVInputshapesparameters.csv) &lt;/span&gt;has been created automatically in the RegressionComputation output folder&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Input shapes CSV: </string>
+            <string>Shape observations CSV: </string>
            </property>
           </widget>
          </item>
@@ -517,21 +513,13 @@
           </widget>
          </item>
         </layout>
-       </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_RegressionTimePointRange">
-        <property name="title">
-         <string>Regression's Time Points</string>
-        </property>
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QLabel" name="label_TimePointRange">
            <property name="text">
-            <string>Time point range: </string>
+            <string>Time interval: </string>
            </property>
           </widget>
          </item>
@@ -563,7 +551,6 @@
           </widget>
          </item>
         </layout>
-       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_RegressionPlot">
