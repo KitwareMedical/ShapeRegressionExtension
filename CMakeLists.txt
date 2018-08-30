@@ -24,7 +24,7 @@ find_package(Git REQUIRED)
 find_package(Subversion REQUIRED)
 #-----------------------------------------------------------------------------
 # Extension dependencies
-find_package(Slicer REQUIRED)
+find_package(Slicer 4.9 REQUIRED)
 include(${Slicer_USE_FILE})
 mark_as_superbuild(Slicer_DIR)
 mark_as_superbuild(PYTHON_EXECUTABLE)
