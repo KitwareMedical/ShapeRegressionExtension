@@ -1,14 +1,20 @@
 import os, sys
-import unittest
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
 import platform
 import csv
 import logging
-from ShapeRegressionUtilities import *
 import urllib
 import re
+from packaging import version
+
+def _setSectionResizeMode(header, *args, **kwargs):
+  """ To be compatible with Qt4 and Qt5 """
+  if version.parse(qt.Qt.qVersion()) < version.parse("5.0.0"):
+    header.setResizeMode(*args, **kwargs)
+  else:
+    header.setSectionResizeMode(*args, **kwargs)
 
 #
 # RegressionComputation
@@ -24,7 +30,7 @@ class RegressionComputation(ScriptedLoadableModule):
     self.parent.title = "RegressionComputation"
     self.parent.categories = ["Shape Regression"]
     self.parent.dependencies = []
-    self.parent.contributors = ["Laura Pascal (Kitware Inc.), James Fishbaugh (NYU Tandon School of Engineering), Beatriz Paniagua (Kitware Inc.)"]
+    self.parent.contributors = ["Laura Pascal (Kitware Inc.), James Fishbaugh (NYU Tandon School of Engineering), Pablo Hernandez (Kitware Inc.), Beatriz Paniagua (Kitware Inc.)"]
     self.parent.helpText = """
     Computation of time-regressed shapes in a collection of 3D shape inputs associated to a linear variable.
     This module uses shape4D CLI: https://github.com/laurapascal/shape4D.
@@ -83,26 +89,26 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.tn.enabled = True
     self.defaultTimePointRange = self.getWidget('checkBox_defaultTimePointRange')
     self.defaultTimePointRange.visible = False
-    
+
     self.T.setMinimum(10)
     self.T.setMaximum(9999999)
-        
+
     # Deformation Parameters
     self.CollapsibleButton_DeformationParameters = self.getWidget('CollapsibleButton_DeformationParameters')
     self.defKernelWidth = self.getWidget('spinBox_DeformationKernelWidh')
     self.kernelType = self.getWidget('ComboBox_KernelType')
     self.regularityWeight = self.getWidget('doubleSpinBox_RegularityWeight')
-    
+
     self.defKernelWidth.setMinimum(0)
     self.defKernelWidth.setMaximum(9999999)
-    self.regularityWeight.value = 0.01    
+    self.regularityWeight.value = 0.01
 
     # Output Parameters
     self.CollapsibleButton_OutputParameters = self.getWidget('CollapsibleButton_OutputParameters')
     self.outputDirectory = self.getWidget('DirectoryButton_OutputDirectory')
     self.outputPrefix = self.getWidget('lineEdit_OutputRootname')
     self.saveEveryN = self.getWidget('spinBox_SaveEveryNIterations')
-    
+
     self.outputPrefix.text = 'Regression_output_'
     self.saveEveryN.value = 50
 
@@ -130,7 +136,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     #self.t0.connect('valueChanged(int)', self.onSetMaximumStartingTimePoint)
     #self.tn.connect('valueChanged(int)', self.onSetMinimumEndingTimePoint)
     #self.defaultTimePointRange.connect('clicked(bool)', self.onEnableTimePointRange)
-    
+
 
     self.CollapsibleButton_DeformationParameters.connect('clicked()',
                                                         lambda: self.onSelectedCollapsibleButtonOpen(
@@ -154,11 +160,12 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.tableWidget_inputShapeParameters.setColumnWidth(0, 400)
     horizontalHeader = self.tableWidget_inputShapeParameters.horizontalHeader()
     horizontalHeader.setStretchLastSection(False)
-    horizontalHeader.setResizeMode(0, qt.QHeaderView.Stretch)
-    horizontalHeader.setResizeMode(1, qt.QHeaderView.ResizeToContents)
-    horizontalHeader.setResizeMode(2, qt.QHeaderView.ResizeToContents)
-    horizontalHeader.setResizeMode(3, qt.QHeaderView.ResizeToContents)
-    horizontalHeader.setResizeMode(4, qt.QHeaderView.ResizeToContents)
+
+    _setSectionResizeMode(horizontalHeader, 0, qt.QHeaderView.Stretch)
+    _setSectionResizeMode(horizontalHeader, 1, qt.QHeaderView.ResizeToContents)
+    _setSectionResizeMode(horizontalHeader, 2, qt.QHeaderView.ResizeToContents)
+    _setSectionResizeMode(horizontalHeader, 3, qt.QHeaderView.ResizeToContents)
+    _setSectionResizeMode(horizontalHeader, 4, qt.QHeaderView.ResizeToContents)
 
     #   Shape4D CLI Progress Bar Configuration
     self.CLIProgressBar_shape4D.hide()
@@ -247,20 +254,20 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     messageBox.exec_()
 
   def onInputShapesDirectoryChanged(self):
-    
+
     inputShapesDirectory = self.shapeInputDirectory.directory.encode('utf-8')
     # Set this directory as the default output directory as well
     self.outputDirectory.directory = str(inputShapesDirectory)
-    
+
     row = 0
-    
+
     allShapeSigmaWs = []
-    
+
     for curFile in sorted(os.listdir(inputShapesDirectory)):
-        
+
         if not (curFile.endswith(".vtk")):
-          continue 
-          
+          continue
+
         self.tableWidget_inputShapeParameters.setRowCount(row + 1)
 
         # Read the vtk file to set a default kernel width
@@ -276,13 +283,13 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
         smallestRange = min(xRange, yRange, zRange)
         initSigmaW = int(smallestRange*0.50)
         allShapeSigmaWs.append(initSigmaW)
-        
+
         # Try to extract the time point as a suffix
         curTimePoint = 0.0
         numsInFilename = re.findall(r'[-+]?\d*\.\d+|\d+', curFile)
         if (len(numsInFilename) > 0):
           curTimePoint = numsInFilename[-1]   # We assume the final number in the filename is the time point
-        
+
         # Column 0:
         #rootname = os.path.basename(curFile).split(".")[0]
         rootname = os.path.splitext(os.path.basename(curFile))[0]
@@ -295,16 +302,16 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
         for column in range(1,5):
           widget = qt.QWidget()
           layout = qt.QHBoxLayout(widget)
-          
+
           # If this is the 'Shape Index' column we limit this to an integer
           if (column == 3):
             spinBox = qt.QSpinBox()
             spinBox.setRange(0,1000)
             spinBox.value = 0
-          # The rest of the columns are doubles 
+          # The rest of the columns are doubles
           else:
             spinBox = qt.QDoubleSpinBox()
-            
+
             if column == 1: # Time Point
               spinBox.value = float(curTimePoint)
               spinBox.connect('valueChanged(double)', self.onSetTimePointRange)
@@ -327,12 +334,12 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
 
     # We can set a default for deformation kernel width as smallest shape kernel
     self.defKernelWidth.value = min(allShapeSigmaWs)
-    
+
     # Update the time range (if time point suffixes provided initialization)
     self.onSetTimePointRange()
 
   # I don't see a reason for requiring a user to uncheck a box to set t0 and tn (James)
-  
+
   #def onEnableTimePointRange(self):
   #  # Enable/Disable the time point range spinboxes
   #  self.t0.enabled = not self.defaultTimePointRange.checkState()
@@ -350,7 +357,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
   #  #if self.defaultTimePointRange.checkState():
   #  #  self.onDefaultTimePointRange()
 
-  
+
   def onSetTimePointRange(self):
     self.Logic.sortInputCasesAges()
     self.t0.value = self.Logic.age_list[0]
@@ -393,7 +400,7 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     self.shape4D_cli_node.SetName(shape4D_cli_node_name)
 
   def runShape4D(self):
-    print "Run Shape4D"
+    logging.debug("Run Shape4D")
 
     # Write XML driver file input
     XMLdriverfilepath = self.writeXMLdriverFile()
@@ -401,7 +408,7 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     # Call Shape4D
     if XMLdriverfilepath:
       parameters = {}
-      print XMLdriverfilepath
+      logging.debug(XMLdriverfilepath)
       parameters["inputXML"] = XMLdriverfilepath
       self.addObserver(self.shape4D_cli_node, self.StatusModifiedEvent, self.onCLIModuleModified)
       slicer.cli.run(self.shape4D_module, self.shape4D_cli_node, parameters, wait_for_completion=False)
@@ -409,7 +416,7 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
       self.interface.applyButton.setText("Run Shape4D")
 
   def writeXMLdriverFile(self):
-    print "Write XML driver file"
+    logging.debug("Write XML driver file")
 
     useFista = False
     if (self.interface.optimMethod.currentText == "FISTA"):
@@ -716,16 +723,20 @@ class RegressionComputationTest(ScriptedLoadableModuleTest, VTKObservationMixin)
       output_filepath = os.path.join(outputDirectoryPath, output_filename)
       #   Checking the existence of the output files in the folder Step3_ParaToSPHARMMesh
       if not os.path.exists(output_filepath):
+        logging.info("Fail: Path does not exist: {}".format(output_filepath))
         return False
 
       #   Loading the 2 models for comparison
       comparison_output_rootname = comparison_output_downloads[i][1].split(".")[0]
       output_rootname = output_filename.split(".")[0]
-      model1 = MRMLUtility.loadMRMLNode(comparison_output_rootname, outputDirectoryPath, comparison_output_downloads[i][1], 'ModelFile')
-      model2 = MRMLUtility.loadMRMLNode(output_rootname, outputDirectoryPath, output_filename, 'ModelFile')
+      success, model1 = slicer.util.loadModel(os.path.join(outputDirectoryPath, comparison_output_downloads[i][1]), returnNode=True)
+      model1.SetName(comparison_output_rootname)
+      success, model2 = slicer.util.loadModel(output_filepath, returnNode=True)
+      model2.SetName(output_rootname)
 
       #   Comparison
       if not self.polydata_comparison(model1, model2):
+        logging.warning("Fail: Data comparison for data {}, {}.".format(i, output_filename))
         return False
 
     return True
@@ -738,6 +749,7 @@ class RegressionComputationTest(ScriptedLoadableModuleTest, VTKObservationMixin)
     nbPoints1 = polydata1.GetNumberOfPoints()
     nbPoints2 = polydata2.GetNumberOfPoints()
     if not nbPoints1 == nbPoints2:
+      logging.warning("Fail polydata_comparison in nbPoints. model1Points {} != model2Points {}".format(nbPoints1, nbPoints2))
       return False
 
     # Polydata
@@ -748,18 +760,21 @@ class RegressionComputationTest(ScriptedLoadableModuleTest, VTKObservationMixin)
     nbComponents1 = data1.GetNumberOfComponents()
     nbComponents2 = data2.GetNumberOfComponents()
     if not nbComponents1 == nbComponents2:
+      logging.warning("Fail polydata_comparison in nbComponents. model1Components {} != model2Components {}".format(nbComponents1, nbComponents2))
       return False
 
     #   Points value
     for i in range(nbPoints1):
       for j in range(nbComponents1):
         if not data1.GetTuple(i)[j] == data2.GetTuple(i)[j]:
+          logging.warning("Fail polydata_comparison in PointsValues. point:{}, component:{}".format(i, j))
           return False
 
     # Area
     nbAreas1 = polydata1.GetPointData().GetNumberOfArrays()
     nbAreas2 = polydata2.GetPointData().GetNumberOfArrays()
     if not nbAreas1 == nbAreas2:
+      logging.warning("Fail polydata_comparison in nbAreas. model1Areas {} != model2Areas {}".format(nbAreas1, nbAreas2))
       return False
 
     for l in range(nbAreas1):
@@ -770,18 +785,21 @@ class RegressionComputationTest(ScriptedLoadableModuleTest, VTKObservationMixin)
       nameArea1 = area1.GetName()
       nameArea2 = area2.GetName()
       if not nameArea1 == nameArea2:
+        logging.warning("Fail polydata_comparison in name of areas. model1AreaName {} != model2AreaName {}".format(nameArea1, nameArea2))
         return False
 
       # Number of Components of the area
       nbComponents1 = area1.GetNumberOfComponents()
       nbComponents2 = area2.GetNumberOfComponents()
       if not nbComponents1 == nbComponents2:
+        logging.warning("Fail polydata_comparison in nbComponents of areas. model1Components {} != model2Components {}".format(nbComponents1, nbComponents2))
         return False
 
       # Points value in the area
       for i in range(nbPoints1):
         for j in range(nbComponents1):
           if not data1.GetTuple(i)[j] == data2.GetTuple(i)[j]:
+            logging.warning("Fail polydata_comparison in areas. point:{}, component:{}".format(i, j))
             return False
 
     return True
@@ -791,6 +809,6 @@ class RegressionComputationTest(ScriptedLoadableModuleTest, VTKObservationMixin)
     for url, name in downloads:
       filePath = os.path.join(directoryPath, name)
       if not os.path.exists(filePath) or os.stat(filePath).st_size == 0:
-        print 'Requesting download %s from %s...\n' % (name, url)
+        logging.info('Requesting download %s from %s...\n' % (name, url))
         urllib.urlretrieve(url, filePath)
     self.delayDisplay('Finished with download')

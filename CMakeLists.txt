@@ -50,7 +50,6 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Extension modules
-add_subdirectory(RegressionUtilities)
 add_subdirectory(RegressionComputation)
 add_subdirectory(RegressionVisualization)
 
