@@ -385,6 +385,19 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       messageBox.setStandardButtons(messageBox.Ok)
       messageBox.exec_()
 
+  def autoOrientNormals(self, model):
+    surface = None
+    surface = model.GetPolyDataConnection()
+    normals = vtk.vtkPolyDataNormals()
+    normals.SetAutoOrientNormals(True)
+    normals.SetFlipNormals(False)
+    normals.SetSplitting(False)
+    normals.ConsistencyOn()
+    normals.SetInputConnection(surface)
+    surface = normals.GetOutputPort()
+    model.SetPolyDataConnection(surface)
+    return model
+
   def loadModels(self):
     """ Get models from files. Populate self.RegressionModels. """
     inputDirectory = self.inputDirectoryButton.directory.encode('utf-8')
@@ -395,6 +408,9 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       logging.debug(model)
       if not success:
         logging.error("{} not found or is not a model.".format(fullPath) )
+      # XXX (Pablo): If we are sure the data is normalized, the autoOrient can be removed from the visualizer.
+      logging.debug("Auto-orienting normals of the input models")
+      model = self.autoOrientNormals(model)
       self.RegressionModels[number] = model
 
   def colorMapsConfiguration(self):
