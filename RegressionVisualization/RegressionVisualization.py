@@ -858,7 +858,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       # Compute of the volume of each shape input
       # shapePaths_rootname = os.path.split(self.shapePaths[i])[1].split(".")[0]
       # model = MRMLUtility.loadMRMLNode(shapePaths_rootname, shapePaths_dir, shapePaths_filename, 'ModelFile')
-      success, model = slicer.mrmlScene.loadModel(self.shapePaths[i], returnNode=True)
+      success, model = slicer.util.loadModel(self.shapePaths[i], returnNode=True)
       # model.SetName(shapePaths_rootname)
       polydata = model.GetPolyData()
       triangleFilter = vtk.vtkTriangleFilter()
