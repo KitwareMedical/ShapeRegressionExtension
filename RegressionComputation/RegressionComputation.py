@@ -718,8 +718,10 @@ class RegressionComputationTest(ScriptedLoadableModuleTest, VTKObservationMixin)
     )
     self.download_files(outputDirectoryPath, comparison_output_downloads)
 
-    for i in range(10):
-      output_filename = "regression_final_time_00" + str(i) + ".vtk"
+    comparison_filenames = [name for download, name in comparison_output_downloads]
+    for index, comparison_filename in enumerate(comparison_filenames):
+      # output_filename = "regression_final_time_0" + str(index).zfill(2) + ".vtk"
+      output_filename = "regression_final_time_" + "{:03}".format(index) + ".vtk"
       output_filepath = os.path.join(outputDirectoryPath, output_filename)
       #   Checking the existence of the output files in the folder Step3_ParaToSPHARMMesh
       if not os.path.exists(output_filepath):
@@ -727,24 +729,21 @@ class RegressionComputationTest(ScriptedLoadableModuleTest, VTKObservationMixin)
         return False
 
       #   Loading the 2 models for comparison
-      comparison_output_rootname = comparison_output_downloads[i][1].split(".")[0]
+      comparison_output_rootname = comparison_filename.split(".")[0]
       output_rootname = output_filename.split(".")[0]
-      success, model1 = slicer.util.loadModel(os.path.join(outputDirectoryPath, comparison_output_downloads[i][1]), returnNode=True)
+      success, model1 = slicer.util.loadModel(os.path.join(outputDirectoryPath, comparison_filename), returnNode=True)
       model1.SetName(comparison_output_rootname)
       success, model2 = slicer.util.loadModel(output_filepath, returnNode=True)
       model2.SetName(output_rootname)
 
       #   Comparison
-      if not self.polydata_comparison(model1, model2):
-        logging.warning("Fail: Data comparison for data {}, {}.".format(i, output_filename))
+      if not self.polydata_comparison(model1.GetPolyData(), model2.GetPolyData()):
+        logging.warning("Fail: Data comparison for data {}, {}.".format(index, output_filename))
         return False
 
     return True
 
-  def polydata_comparison(self, model1, model2):
-    polydata1 = model1.GetPolyData()
-    polydata2 = model2.GetPolyData()
-
+  def polydata_comparison(self, polydata1, polydata2):
     # Number of points
     nbPoints1 = polydata1.GetNumberOfPoints()
     nbPoints2 = polydata2.GetNumberOfPoints()
