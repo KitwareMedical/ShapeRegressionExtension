@@ -670,7 +670,7 @@ class RegressionComputationTest(ScriptedLoadableModuleTest, VTKObservationMixin)
     moduleWidget.saveEveryN.value = 5
 
     moduleWidget.estimateBaseline.setCheckState(qt.Qt.Unchecked)
-    moduleWidget.optimMethod.setCurrentIndex(0)  # FISTA
+    moduleWidget.optimMethod.setCurrentIndex(0)  # Gradient descent
     moduleWidget.breakRatio.value = 0.00001
     moduleWidget.maxIters.value = 3000
 
