@@ -270,7 +270,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
 
     # Update the Regression's Plot 'Input Shapes CSV' to this directory and default name CSV file
     csvPath = os.path.join(inputShapesDirectory, 'CSVInputshapesparameters.csv')
-    print(csvPath)
+    
     if os.path.exists(csvPath):
     
       self.PathLineEdit_RegressionInputShapesCSV.setCurrentPath(csvPath)
@@ -872,9 +872,12 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     # Find the minimum and the maximum of the ages
     ageMin, ageMax = self.t0.value, self.tn.value
 
+    print(self.timepts)
+
     for i in range(len(self.shapePaths)):
       # Age of the shape input
-      table2.SetValue(i, 0, str( self.timepts[i] ))
+      
+      table2.SetValue(i, 0, float( self.timepts[i] ))
 
       # Compute of the volume of each shape input
       # shapePaths_rootname = os.path.split(self.shapePaths[i])[1].split(".")[0]
@@ -893,11 +896,14 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       table2.SetValue(i, 1, volume)
 
       slicer.mrmlScene.RemoveNode(model)
-
+      
+    
+    deltaT = ((ageMax - ageMin) / float(ShapeRegressionNumPoints - 1))
     for j in range(ShapeRegressionNumPoints):
 
       # Age of the regression shapes
-      age = ageMin + j * ((ageMax - ageMin) / float(ShapeRegressionNumPoints - 1))
+      age = ageMin + j * deltaT
+      print(age)
       table1.SetValue(j, 0, age)
 
       # Compute of the volume of each regression shapes
@@ -931,15 +937,20 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     ShapeRegressionPlotSeriesNode.SetAndObserveTableNodeID(tableNode1.GetID())
     ShapeRegressionPlotSeriesNode.SetXColumnName(tableNode1.GetColumnName(0))
     ShapeRegressionPlotSeriesNode.SetYColumnName(tableNode1.GetColumnName(1))
-    #ShapeRegressionPlotSeriesNode.SetType('line')
-    ShapeRegressionPlotSeriesNode.SetLineWidth(3.0)
+    ShapeRegressionPlotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeLine)
+    ShapeRegressionPlotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleNone)
+    ShapeRegressionPlotSeriesNode.SetLineWidth(6.0)
+    ShapeRegressionPlotSeriesNode.SetColor(0.0, 0.4470, 0.7410)
 
     ShapeInputPlotSeriesNode.SetName(arrShapeInput.GetName())
     ShapeInputPlotSeriesNode.SetYColumnName("Shape Volumes")
     ShapeInputPlotSeriesNode.SetAndObserveTableNodeID(tableNode2.GetID())
     ShapeInputPlotSeriesNode.SetXColumnName(tableNode2.GetColumnName(0))
     ShapeInputPlotSeriesNode.SetYColumnName(tableNode2.GetColumnName(1))
-    #ShapeInputPlotSeriesNode.SetType('scatter')
+    ShapeInputPlotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
+    ShapeInputPlotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleNone)
+    ShapeInputPlotSeriesNode.SetMarkerSize(12.0)
+    ShapeInputPlotSeriesNode.SetColor(0.0, 0.0, 0.0)
 
     # Add and Observe plots IDs in PlotChart
     plotChartNode.AddAndObservePlotSeriesNodeID(ShapeRegressionPlotSeriesNode.GetID())
@@ -956,7 +967,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     plotChartNode.SetAttribute('TitleName', 'Regression Plot')
     plotChartNode.SetAttribute('XAxisLabelName', 'Time Points (ages)')
     plotChartNode.SetAttribute('YAxisLabelName', 'Shape Volume')
-    plotChartNode.SetAttribute('Type', 'Scatter')
+    #plotChartNode.SetAttribute('Type', 'Scatter')
 
 
   # I don't see any reason to for having to click to change time values (James)
