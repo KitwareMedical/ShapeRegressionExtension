@@ -904,7 +904,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       # Age of the regression shapes
       age = ageMin + j * deltaT
       print(age)
-      table1.SetValue(j, 0, age)
+      table1.SetValue(j, 0, float(age) )
 
       # Compute of the volume of each regression shapes
       model = self.RegressionModels[j]
@@ -919,10 +919,13 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       volume = massProps.GetVolume()
       table1.SetValue(j, 1, volume)
 
+    print(table1.GetValue(0,0))
+    print(table1.GetValue(0,1))
+
     # Create a MRMLTableNode
-    tableNode1 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "tableNode")
+    tableNode1 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "tableNode1")
     tableNode1.SetAndObserveTable(table1)
-    tableNode2 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "tableNode")
+    tableNode2 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "tableNode2")
     tableNode2.SetAndObserveTable(table2)
 
     # Create two PlotSeriesNodes
@@ -933,15 +936,15 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
 
     # Set and Observe the MRMLTableNodeID
     ShapeRegressionPlotSeriesNode.SetName(arrShapeRegression.GetName())
-    ShapeRegressionPlotSeriesNode.SetYColumnName("Shape Volumes")
+    ShapeRegressionPlotSeriesNode.SetYColumnName("Shape Regression Volumes")
     ShapeRegressionPlotSeriesNode.SetAndObserveTableNodeID(tableNode1.GetID())
     ShapeRegressionPlotSeriesNode.SetXColumnName(tableNode1.GetColumnName(0))
     ShapeRegressionPlotSeriesNode.SetYColumnName(tableNode1.GetColumnName(1))
-    ShapeRegressionPlotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeLine)
+    ShapeRegressionPlotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeScatter)
     ShapeRegressionPlotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleNone)
     ShapeRegressionPlotSeriesNode.SetLineWidth(6.0)
     ShapeRegressionPlotSeriesNode.SetColor(0.0, 0.4470, 0.7410)
-
+    
     ShapeInputPlotSeriesNode.SetName(arrShapeInput.GetName())
     ShapeInputPlotSeriesNode.SetYColumnName("Shape Volumes")
     ShapeInputPlotSeriesNode.SetAndObserveTableNodeID(tableNode2.GetID())
