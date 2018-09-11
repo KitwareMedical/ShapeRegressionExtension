@@ -391,8 +391,10 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     normals = vtk.vtkPolyDataNormals()
     normals.SetAutoOrientNormals(True)
     normals.SetFlipNormals(False)
-    normals.SetSplitting(False)
+    normals.SetFeatureAngle(90.0)
+    normals.SetSplitting(True)
     normals.ConsistencyOn()
+    normals.SetNonManifoldTraversal(True)
     normals.SetInputConnection(surface)
     surface = normals.GetOutputPort()
     model.SetPolyDataConnection(surface)
@@ -872,8 +874,6 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     # Find the minimum and the maximum of the ages
     ageMin, ageMax = self.t0.value, self.tn.value
 
-    print(self.timepts)
-
     for i in range(len(self.shapePaths)):
       # Age of the shape input
       
@@ -903,7 +903,6 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
 
       # Age of the regression shapes
       age = ageMin + j * deltaT
-      print(age)
       table1.SetValue(j, 0, float(age) )
 
       # Compute of the volume of each regression shapes
@@ -918,9 +917,6 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       massProps.Update()
       volume = massProps.GetVolume()
       table1.SetValue(j, 1, volume)
-
-    print(table1.GetValue(0,0))
-    print(table1.GetValue(0,1))
 
     # Create a MRMLTableNode
     tableNode1 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "tableNode1")
@@ -1032,7 +1028,9 @@ class RegressionVisualizationLogic(ScriptedLoadableModuleLogic):
     colorMapInfo.colormapName = colormapName
 
     #     Number of components of the color map
-    model = RegressionModels[0]
+    #model = RegressionModels[0]
+    # We can't assume the key '0' exists in the dictionary
+    model = RegressionModels[RegressionModels.keys()[0]]
     numberOfComponents = model.GetPolyData().GetPointData().GetScalars(colormapName).GetNumberOfComponents()
     colorMapInfo.numberOfComponents = numberOfComponents
 
@@ -1065,15 +1063,14 @@ class RegressionVisualizationLogic(ScriptedLoadableModuleLogic):
 
   def findColorMapInCommon(self, RegressionModels):
     # Color Map in common for each models containing in the Sequence
-    ColorMapNameInCommon = []
+    ColorMapNameInCommon = set()
     for number, model in RegressionModels.items():
       numOfArray = model.GetPolyData().GetPointData().GetNumberOfArrays()
-      ColorMapNameslist = []
       for i in range(0, numOfArray):
-        if number == 0:
-          ColorMapNameInCommon.append(model.GetPolyData().GetPointData().GetArray(i).GetName())
-        ColorMapNameslist.append(model.GetPolyData().GetPointData().GetArray(i).GetName())
-      ColorMapNameInCommon = set(ColorMapNameslist) & set(ColorMapNameInCommon)
+        ColorMapNameInCommon.add(model.GetPolyData().GetPointData().GetArray(i).GetName())
+      
+    print("Color Maps:")
+    print(ColorMapNameInCommon)
     return ColorMapNameInCommon
 
   def creation3DColorMaps(self, color3DmapName, RegressionModels):
