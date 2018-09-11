@@ -160,6 +160,9 @@
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Set the starting time point for the registration&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
+           <property name="minimum">
+            <number>-99999999</number>
+           </property>
            <property name="maximum">
             <number>999999999</number>
            </property>

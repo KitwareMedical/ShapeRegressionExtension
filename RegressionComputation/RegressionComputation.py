@@ -189,6 +189,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
     self.tn.blockSignals(True)
     self.tn.setMinimum(0)
     self.tn.value = 0
+    self.t0.setMinimum(-999999)
     self.t0.setMaximum(9999999)
     self.t0.value = 0
     self.t0.blockSignals(False)
@@ -321,7 +322,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
               spinBox.value = initSigmaW
             if column == 4: # Weight
               spinBox.value = 1
-              spinBox.setRange(0,1)
+              spinBox.setRange(0,1e10)
               spinBox.setSingleStep(0.1);
 
           layout.addWidget(spinBox)
