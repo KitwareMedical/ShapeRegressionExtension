@@ -79,6 +79,10 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.Logic = RegressionVisualizationLogic()
     self.InputShapes = dict()
     self.RegressionModels = dict()
+    # Keep another copy of the regression models without modifying the normals,
+    # which can cause major differences in the volume plot
+    # XXX (James): This is a temporary fix that we need to find a better solution for
+    self.RegressionVolume = dict()
     self.commonColorMapInformation = dict()
     self.colorNodeDict = dict()
     self.currentSequenceColorMap = None
@@ -314,6 +318,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     # Reset of the global variable
     self.InputShapes = dict()
     self.RegressionModels = dict()
+    self.RegressionVolume = dict()
     self.commonColorMapInformation = dict()
     if not self.colorNodeDict == None:
       for colorNode in self.colorNodeDict.values():
@@ -410,10 +415,24 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       logging.debug(model)
       if not success:
         logging.error("{} not found or is not a model.".format(fullPath) )
-      # XXX (Pablo): If we are sure the data is normalized, the autoOrient can be removed from the visualizer.
+      else:
+        # Compute volume before modifying normals, which can cause major differences in the volume plot
+        # XXX (James): This is a temporary fix that we need to find a better solution for
+        polydata = model.GetPolyData()
+        massProps = vtk.vtkMassProperties()
+        #massProps.SetInputData(triangleFilter.GetOutput())
+        massProps.SetInputData(polydata)
+        massProps.Update()
+        volume = massProps.GetVolume()
+        self.RegressionVolume[number] = volume
+        
+      # XXX (Pablo): If we are sure the data is normalized, the autoOrient can be removed from the visualizer.  
       logging.debug("Auto-orienting normals of the input models")
+      
       model = self.autoOrientNormals(model)
       self.RegressionModels[number] = model
+
+    print(self.RegressionVolume)
 
   def colorMapsConfiguration(self):
     ColorMapNameInCommon = self.Logic.findColorMapInCommon(self.RegressionModels)
@@ -885,19 +904,19 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       success, model = slicer.util.loadModel(self.shapePaths[i], returnNode=True)
       # model.SetName(shapePaths_rootname)
       polydata = model.GetPolyData()
-      triangleFilter = vtk.vtkTriangleFilter()
-      triangleFilter.SetInputData(polydata)
-      triangleFilter.Update()
+      #triangleFilter = vtk.vtkTriangleFilter()
+      #triangleFilter.SetInputData(polydata)
+      #triangleFilter.Update()      
 
       massProps = vtk.vtkMassProperties()
-      massProps.SetInputData(triangleFilter.GetOutput())
+      #massProps.SetInputData(triangleFilter.GetOutput())
+      massProps.SetInputData(polydata)
       massProps.Update()
       volume = massProps.GetVolume()
       table2.SetValue(i, 1, volume)
 
       slicer.mrmlScene.RemoveNode(model)
       
-    
     deltaT = ((ageMax - ageMin) / float(ShapeRegressionNumPoints - 1))
     for j in range(ShapeRegressionNumPoints):
 
@@ -905,18 +924,22 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       age = ageMin + j * deltaT
       table1.SetValue(j, 0, float(age) )
 
-      # Compute of the volume of each regression shapes
-      model = self.RegressionModels[j]
-      polydata = model.GetPolyData()
-      triangleFilter = vtk.vtkTriangleFilter()
-      triangleFilter.SetInputData(polydata)
-      triangleFilter.Update()
+      if (len(self.RegressionVolume) > 0):
+        table1.SetValue(j, 1, self.RegressionVolume[self.RegressionVolume.keys()[j]])
+      else:
+        # Compute of the volume of each regression shapes
+        model = self.RegressionModels[self.RegressionModels.keys()[j]]
+        polydata = model.GetPolyData()
+        #triangleFilter = vtk.vtkTriangleFilter()
+        #triangleFilter.SetInputData(polydata)
+        #triangleFilter.Update()
 
-      massProps = vtk.vtkMassProperties()
-      massProps.SetInputData(triangleFilter.GetOutput())
-      massProps.Update()
-      volume = massProps.GetVolume()
-      table1.SetValue(j, 1, volume)
+        massProps = vtk.vtkMassProperties()
+        #massProps.SetInputData(triangleFilter.GetOutput())
+        massProps.SetInputData(polydata)
+        massProps.Update()
+        volume = massProps.GetVolume()
+        table1.SetValue(j, 1, volume)
 
     # Create a MRMLTableNode
     tableNode1 = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode", "tableNode1")
@@ -1069,8 +1092,6 @@ class RegressionVisualizationLogic(ScriptedLoadableModuleLogic):
       for i in range(0, numOfArray):
         ColorMapNameInCommon.add(model.GetPolyData().GetPointData().GetArray(i).GetName())
       
-    print("Color Maps:")
-    print(ColorMapNameInCommon)
     return ColorMapNameInCommon
 
   def creation3DColorMaps(self, color3DmapName, RegressionModels):
