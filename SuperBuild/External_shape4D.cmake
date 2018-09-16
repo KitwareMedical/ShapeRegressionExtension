@@ -22,7 +22,9 @@
 set(proj shape4D)
 
 # Set dependency list
-set(${proj}_DEPENDENCIES "")
+set(${proj}_DEPENDENCIES
+  ""
+  )
 
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
@@ -38,24 +40,32 @@ endif()
 
 if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
-  if(NOT DEFINED git_protocol)
-    set(git_protocol "git")
-  endif()
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
+    "${EP_GIT_PROTOCOL}://github.com/jamesfishbaugh/shape4D.git"
+    QUIET
+    )
+
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
+    "c74c766a4cd9b59b739fbe0618efd6f5ec484488"
+    QUIET
+    )
 
   set(config ${CMAKE_BUILD_TYPE})
   if(DEFINED CMAKE_CONFIGURATION_TYPES)
     set(config ${CMAKE_CFG_INTDIR})
   endif()
 
-  set(${proj}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
-  set(${proj}_PACKAGE_DIR ${${proj}_DIR}/${proj}-build)
+  set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
+  set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
-    GIT_REPOSITORY "${git_protocol}://github.com/jamesfishbaugh/shape4D.git"
-    GIT_TAG "c74c766a4cd9b59b739fbe0618efd6f5ec484488"
-    SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}
-    BINARY_DIR ${${proj}_DIR}
+    GIT_REPOSITORY "${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}"
+    GIT_TAG "${${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG}"
+    SOURCE_DIR ${EP_SOURCE_DIR}
+    BINARY_DIR ${EP_BINARY_DIR}
     INSTALL_COMMAND ${CMAKE_COMMAND} --build ${${proj}_PACKAGE_DIR} --config ${config} --target package
     CMAKE_CACHE_ARGS
       -DCMAKE_CXX_FLAGS:STRING=${ep_common_cxx_flags}
@@ -65,7 +75,10 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     DEPENDS
       ${${proj}_DEPENDENCIES}
     )
+  set(${proj}_DIR ${EP_BINARY_DIR}/shape4D-build)
 
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDENCIES})
 endif()
+
+mark_as_superbuild(${proj}_DIR:PATH)
