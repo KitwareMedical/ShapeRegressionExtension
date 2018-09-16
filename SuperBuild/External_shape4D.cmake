@@ -42,13 +42,13 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
-    "${EP_GIT_PROTOCOL}://github.com/jamesfishbaugh/shape4D.git"
+    "${EP_GIT_PROTOCOL}://github.com/jcfr/shape4D.git"
     QUIET
     )
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "c74c766a4cd9b59b739fbe0618efd6f5ec484488"
+    "12fef84ca2a56feffc59d8159bdadd2ce4a4138e" # slicersalt-2018-01-22-c74c766a4c
     QUIET
     )
 
