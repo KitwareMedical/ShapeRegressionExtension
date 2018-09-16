@@ -48,14 +48,9 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "12fef84ca2a56feffc59d8159bdadd2ce4a4138e" # slicersalt-2018-01-22-c74c766a4c
+    "3f47cf711a3d21a441c1e46ea992b0f0480b5cf8" # slicersalt-2018-01-22-c74c766a4c
     QUIET
     )
-
-  set(config ${CMAKE_BUILD_TYPE})
-  if(DEFINED CMAKE_CONFIGURATION_TYPES)
-    set(config ${CMAKE_CFG_INTDIR})
-  endif()
 
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
@@ -66,12 +61,12 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     GIT_TAG "${${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG}"
     SOURCE_DIR ${EP_SOURCE_DIR}
     BINARY_DIR ${EP_BINARY_DIR}
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${${proj}_PACKAGE_DIR} --config ${config} --target package
     CMAKE_CACHE_ARGS
       -DCMAKE_CXX_FLAGS:STRING=${ep_common_cxx_flags}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags}
       -DSlicer_DIR:PATH=${Slicer_DIR}
       -D${proj}_BUILD_SLICER_EXTENSION:BOOL=ON
+    INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDENCIES}
     )

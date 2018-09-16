@@ -35,31 +35,21 @@ if(${EXTENSION_NAME}_SUPERBUILD)
   return()
 endif()
 
+find_package(shape4D REQUIRED)
+
 #-----------------------------------------------------------------------------
 # Extension modules
 add_subdirectory(RegressionComputation)
 add_subdirectory(RegressionVisualization)
 ## NEXT_MODULE
 
-#-----------------------------------------------------------------------------
-# Copy the shape4D’s executable in the package 
-
-set(shape4D_LIB_DIR ${EXTENSION_SUPERBUILD_BINARY_DIR}/shape4D-build/shape4D-build/${Slicer_CLIMODULES_LIB_DIR})
-if(WIN32)
-  set(DIRECTORY_shape4D ${shape4D_LIB_DIR}/$<CONFIG>/.)
-else()
-  set(DIRECTORY_shape4D ${shape4D_LIB_DIR}/.)
+if(APPLE)
+  set(${EXTENSION_NAME}_FIXUP_BUNDLE_LIBRARY_DIRECTORIES ${shape4D_FIXUP_BUNDLE_LIBRARY_DIRECTORIES} CACHE STRING "List of fixup bundle library directories" FORCE)
 endif()
-
-install(
-  DIRECTORY ${DIRECTORY_shape4D}
-  DESTINATION ${Slicer_INSTALL_CLIMODULES_LIB_DIR}/
-  USE_SOURCE_PERMISSIONS
-  COMPONENT Runtime
-)
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS)
+list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${shape4D_DIR};shape4D;RuntimeLibraries;/")
 set(${EXTENSION_NAME}_CPACK_INSTALL_CMAKE_PROJECTS "${EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS}" CACHE STRING "List of external projects to install" FORCE)
 
 #-----------------------------------------------------------------------------
