@@ -43,13 +43,15 @@ add_subdirectory(RegressionComputation)
 add_subdirectory(RegressionVisualization)
 ## NEXT_MODULE
 
-if(APPLE)
-  set(${EXTENSION_NAME}_FIXUP_BUNDLE_LIBRARY_DIRECTORIES ${shape4D_FIXUP_BUNDLE_LIBRARY_DIRECTORIES} CACHE STRING "List of fixup bundle library directories" FORCE)
-endif()
+# XXX Packaging an extension within an extension is not supported on macOS
+#if(APPLE)
+#  set(${EXTENSION_NAME}_FIXUP_BUNDLE_LIBRARY_DIRECTORIES ${shape4D_FIXUP_BUNDLE_LIBRARY_DIRECTORIES} CACHE STRING "List of fixup bundle library directories" FORCE)
+#endif()
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS)
-list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${shape4D_DIR};shape4D;RuntimeLibraries;/")
+# XXX Packaging an extension within an extension is not supported on macOS
+#list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${shape4D_DIR};shape4D;RuntimeLibraries;/")
 set(${EXTENSION_NAME}_CPACK_INSTALL_CMAKE_PROJECTS "${EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS}" CACHE STRING "List of external projects to install" FORCE)
 
 #-----------------------------------------------------------------------------
