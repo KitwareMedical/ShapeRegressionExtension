@@ -22,7 +22,9 @@
 set(proj shape4D)
 
 # Set dependency list
-set(${proj}_DEPENDENCIES "")
+set(${proj}_DEPENDENCIES
+  ""
+  )
 
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
@@ -38,34 +40,40 @@ endif()
 
 if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
-  if(NOT DEFINED git_protocol)
-    set(git_protocol "git")
-  endif()
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
+    "${EP_GIT_PROTOCOL}://github.com/jcfr/shape4D.git"
+    QUIET
+    )
 
-  set(config ${CMAKE_BUILD_TYPE})
-  if(DEFINED CMAKE_CONFIGURATION_TYPES)
-    set(config ${CMAKE_CFG_INTDIR})
-  endif()
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
+    "3f47cf711a3d21a441c1e46ea992b0f0480b5cf8" # slicersalt-2018-01-22-c74c766a4c
+    QUIET
+    )
 
-  set(${proj}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
-  set(${proj}_PACKAGE_DIR ${${proj}_DIR}/${proj}-build)
+  set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
+  set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
-    GIT_REPOSITORY "${git_protocol}://github.com/jamesfishbaugh/shape4D.git"
-    GIT_TAG "c74c766a4cd9b59b739fbe0618efd6f5ec484488"
-    SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}
-    BINARY_DIR ${${proj}_DIR}
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${${proj}_PACKAGE_DIR} --config ${config} --target package
+    GIT_REPOSITORY "${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}"
+    GIT_TAG "${${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG}"
+    SOURCE_DIR ${EP_SOURCE_DIR}
+    BINARY_DIR ${EP_BINARY_DIR}
     CMAKE_CACHE_ARGS
       -DCMAKE_CXX_FLAGS:STRING=${ep_common_cxx_flags}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags}
       -DSlicer_DIR:PATH=${Slicer_DIR}
       -D${proj}_BUILD_SLICER_EXTENSION:BOOL=ON
+    INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDENCIES}
     )
+  set(${proj}_DIR ${EP_BINARY_DIR}/shape4D-build)
 
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDENCIES})
 endif()
+
+mark_as_superbuild(${proj}_DIR:PATH)
