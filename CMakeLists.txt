@@ -27,6 +27,13 @@ find_package(Git REQUIRED)
 mark_as_superbuild(GIT_EXECUTABLE)
 
 #-----------------------------------------------------------------------------
+# Build option(s)
+if(NOT DEFINED ShapeRegressionExtension_BUILD_TESTING)
+  set(ShapeRegressionExtension_BUILD_TESTING ${BUILD_TESTING})
+endif()
+mark_as_superbuild(ShapeRegressionExtension_BUILD_TESTING:BOOL)
+
+#-----------------------------------------------------------------------------
 # SuperBuild setup
 option(${EXTENSION_NAME}_SUPERBUILD "Build ${EXTENSION_NAME} and the projects it depends on." ON)
 mark_as_advanced(${EXTENSION_NAME}_SUPERBUILD)
