@@ -19,7 +19,7 @@ set(SUPERBUILD_TOPLEVEL_PROJECT ${PROJECT_NAME})
 
 #-----------------------------------------------------------------------------
 # Extension dependencies
-find_package(Slicer 4.9 REQUIRED)
+find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
 mark_as_superbuild(Slicer_DIR)
 
