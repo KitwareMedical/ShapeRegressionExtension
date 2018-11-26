@@ -35,7 +35,9 @@ if(${EXTENSION_NAME}_SUPERBUILD)
   return()
 endif()
 
-find_package(shape4D REQUIRED)
+if(NOT DEFINED Slicer_SOURCE_DIR)
+  find_package(shape4D REQUIRED)
+endif()
 
 #-----------------------------------------------------------------------------
 # Extension modules
