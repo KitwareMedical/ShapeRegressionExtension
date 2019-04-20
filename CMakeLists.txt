@@ -19,12 +19,19 @@ set(SUPERBUILD_TOPLEVEL_PROJECT ${PROJECT_NAME})
 
 #-----------------------------------------------------------------------------
 # Extension dependencies
-find_package(Slicer 4.9 REQUIRED)
+find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
 mark_as_superbuild(Slicer_DIR)
 
 find_package(Git REQUIRED)
 mark_as_superbuild(GIT_EXECUTABLE)
+
+#-----------------------------------------------------------------------------
+# Build option(s)
+if(NOT DEFINED ShapeRegressionExtension_BUILD_TESTING)
+  set(ShapeRegressionExtension_BUILD_TESTING ${BUILD_TESTING})
+endif()
+mark_as_superbuild(ShapeRegressionExtension_BUILD_TESTING:BOOL)
 
 #-----------------------------------------------------------------------------
 # SuperBuild setup
@@ -35,7 +42,9 @@ if(${EXTENSION_NAME}_SUPERBUILD)
   return()
 endif()
 
-find_package(shape4D REQUIRED)
+if(NOT DEFINED Slicer_SOURCE_DIR)
+  find_package(shape4D REQUIRED)
+endif()
 
 #-----------------------------------------------------------------------------
 # Extension modules
