@@ -48,8 +48,8 @@ class RegressionVisualization(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "RegressionVisualization"
-    self.parent.categories = ["Shape Regression"]
+    self.parent.title = "Regression Visualization"
+    self.parent.categories = ["Shape Analysis"]
     self.parent.dependencies = []
     self.parent.contributors = ["Laura Pascal (Kitware Inc.), James Fishbaugh (NYU Tandon School of Engineering), Pablo Hernandez (Kitware Inc.), Beatriz Paniagua (Kitware Inc.)"]
     self.parent.helpText = """
