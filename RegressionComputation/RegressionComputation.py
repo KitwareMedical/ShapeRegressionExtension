@@ -256,7 +256,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
 
   def onInputShapesDirectoryChanged(self):
 
-    inputShapesDirectory = self.shapeInputDirectory.directory.encode('utf-8')
+    inputShapesDirectory = self.shapeInputDirectory.directory
     # Set this directory as the default output directory as well
     self.outputDirectory.directory = str(inputShapesDirectory)
 
@@ -438,11 +438,11 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
 
     if sys.platform == 'win32':
       experimentName = "/ShapeRegression"
-      outputDir = self.interface.outputDirectory.directory.encode('utf-8')
+      outputDir = self.interface.outputDirectory.directory
       prefix = "/" + self.interface.outputPrefix.text
     else:
       experimentName = "ShapeRegression/"
-      outputDir = self.interface.outputDirectory.directory.encode('utf-8') + "/"
+      outputDir = self.interface.outputDirectory.directory + "/"
       prefix = self.interface.outputPrefix.text
 
     # Write XML file
@@ -491,7 +491,7 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     fileContents += "  </algorithm>\n"
     fileContents += "</experiment>\n"
 
-    XMLdriverfilepath = os.path.join(self.interface.outputDirectory.directory.encode('utf-8'), "driver.xml")
+    XMLdriverfilepath = os.path.join(self.interface.outputDirectory.directory, "driver.xml")
     f = open(XMLdriverfilepath, 'w')
     f.write(fileContents)
     f.close()
@@ -510,26 +510,27 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     self.age_list = sorted(age_list)
 
   def writeCSVInputshapesparameters(self):
-    inputShapesDirectory = self.interface.shapeInputDirectory.directory.encode('utf-8')
-    outputDirectory = self.interface.outputDirectory.directory.encode('utf-8')
+    inputShapesDirectory = self.interface.shapeInputDirectory.directory
+    outputDirectory = self.interface.outputDirectory.directory
     table = self.interface.tableWidget_inputShapeParameters
 
     # Sort the shape input data according to their age
     self.sortInputCasesAges()
 
-    parameters_sorted = dict()
+    parameters_list = list()
     for row in range(table.rowCount):
-      index = self.age_list.index(table.cellWidget(row, 1).children()[1].value)
-      parameters_sorted[index] = list()
+      temp_parameters = list()
       inputshaperootname = table.cellWidget(row, 0).text
       inputshapefilepath = inputShapesDirectory + "/" + inputshaperootname + ".vtk"
-      parameters_sorted[index].append(inputshapefilepath)
+      temp_parameters.append(inputshapefilepath)
       for column in range(1, table.columnCount):
         widget = table.cellWidget(row, column)
         tuple = widget.children()
         spinbox = tuple[1]
-        parameters_sorted[index].append(spinbox.value)
+        temp_parameters.append(spinbox.value)
+      parameters_list.append(temp_parameters)
 
+    parameters_sorted = sorted(parameters_list, key=lambda x: x[1])
     # Write the parameters needed in a CSV file
     CSVInputshapesparametersfilepath = os.path.join(outputDirectory, "CSVInputshapesparameters.csv")
     file = open(CSVInputshapesparametersfilepath, 'w')
