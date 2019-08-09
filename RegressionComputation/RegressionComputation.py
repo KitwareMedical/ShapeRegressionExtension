@@ -256,7 +256,7 @@ class RegressionComputationWidget(ScriptedLoadableModuleWidget):
 
   def onInputShapesDirectoryChanged(self):
 
-    inputShapesDirectory = self.shapeInputDirectory.directory.encode('utf-8')
+    inputShapesDirectory = self.shapeInputDirectory.directory
     # Set this directory as the default output directory as well
     self.outputDirectory.directory = str(inputShapesDirectory)
 
@@ -438,11 +438,11 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
 
     if sys.platform == 'win32':
       experimentName = "/ShapeRegression"
-      outputDir = self.interface.outputDirectory.directory.encode('utf-8')
+      outputDir = self.interface.outputDirectory.directory
       prefix = "/" + self.interface.outputPrefix.text
     else:
       experimentName = "ShapeRegression/"
-      outputDir = self.interface.outputDirectory.directory.encode('utf-8') + "/"
+      outputDir = self.interface.outputDirectory.directory + "/"
       prefix = self.interface.outputPrefix.text
 
     # Write XML file
@@ -491,7 +491,7 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     fileContents += "  </algorithm>\n"
     fileContents += "</experiment>\n"
 
-    XMLdriverfilepath = os.path.join(self.interface.outputDirectory.directory.encode('utf-8'), "driver.xml")
+    XMLdriverfilepath = os.path.join(self.interface.outputDirectory.directory, "driver.xml")
     f = open(XMLdriverfilepath, 'w')
     f.write(fileContents)
     f.close()
@@ -510,8 +510,8 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     self.age_list = sorted(age_list)
 
   def writeCSVInputshapesparameters(self):
-    inputShapesDirectory = self.interface.shapeInputDirectory.directory.encode('utf-8')
-    outputDirectory = self.interface.outputDirectory.directory.encode('utf-8')
+    inputShapesDirectory = self.interface.shapeInputDirectory.directory
+    outputDirectory = self.interface.outputDirectory.directory
     table = self.interface.tableWidget_inputShapeParameters
 
     # Sort the shape input data according to their age
