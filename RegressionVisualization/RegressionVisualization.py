@@ -259,7 +259,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
   # When the input shape directory is updated, we will try to auto populate the rootname
   def onInputShapesDirectoryChanged(self):
 
-    inputShapesDirectory = self.inputDirectoryButton.directory.encode('utf-8')
+    inputShapesDirectory = self.inputDirectoryButton.directory
 
     pathGlob = os.path.join(inputShapesDirectory, '*final_time*.vtk')
     # Search for *final_time*.vtk, which is the final sequence after estimation
@@ -330,7 +330,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
     self.resetSequences()
     self.resetGlobalState()
 
-    inputDirectory = self.inputDirectoryButton.directory.encode('utf-8')
+    inputDirectory = self.inputDirectoryButton.directory
     shapesRootname = self.lineEdit_shapesRootname.text
     if shapesRootname == "":
       warningMessagetext = "No shape regression rootname specified!"
@@ -407,7 +407,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
 
   def loadModels(self):
     """ Get models from files. Populate self.RegressionModels. """
-    inputDirectory = self.inputDirectoryButton.directory.encode('utf-8')
+    inputDirectory = self.inputDirectoryButton.directory
     for number, shapeBasename in self.InputShapes.items():
       # shapeRootname = os.path.splitext(os.path.basename(shapeBasename))[0]
       fullPath = os.path.join(inputDirectory, shapeBasename)
