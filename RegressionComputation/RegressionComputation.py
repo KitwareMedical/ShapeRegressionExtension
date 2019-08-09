@@ -517,19 +517,20 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     # Sort the shape input data according to their age
     self.sortInputCasesAges()
 
-    parameters_sorted = dict()
+    parameters_list = list()
     for row in range(table.rowCount):
-      index = self.age_list.index(table.cellWidget(row, 1).children()[1].value)
-      parameters_sorted[index] = list()
+      temp_parameters = list()
       inputshaperootname = table.cellWidget(row, 0).text
       inputshapefilepath = inputShapesDirectory + "/" + inputshaperootname + ".vtk"
-      parameters_sorted[index].append(inputshapefilepath)
+      temp_parameters.append(inputshapefilepath)
       for column in range(1, table.columnCount):
         widget = table.cellWidget(row, column)
         tuple = widget.children()
         spinbox = tuple[1]
-        parameters_sorted[index].append(spinbox.value)
+        temp_parameters.append(spinbox.value)
+      parameters_list.append(temp_parameters)
 
+    parameters_sorted = sorted(parameters_list, key=lambda x: x[1])
     # Write the parameters needed in a CSV file
     CSVInputshapesparametersfilepath = os.path.join(outputDirectory, "CSVInputshapesparameters.csv")
     file = open(CSVInputshapesparametersfilepath, 'w')
