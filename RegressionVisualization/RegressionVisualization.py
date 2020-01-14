@@ -336,7 +336,7 @@ class RegressionVisualizationWidget(ScriptedLoadableModuleWidget):
       warningMessagetext = "No shape regression rootname specified!"
       self.warningMessage(warningMessagetext, None)
       return
-    for shapeBasename in os.listdir(inputDirectory):
+    for shapeBasename in sorted(os.listdir(inputDirectory)):
       if not shapeBasename.find(shapesRootname) == -1 and not shapeBasename.find(".vtk") == -1:
         # Store the shape
         number_string = shapeBasename.split(shapesRootname)[1].split(".vtk")[0]
