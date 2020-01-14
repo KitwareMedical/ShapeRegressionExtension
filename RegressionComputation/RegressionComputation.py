@@ -534,7 +534,7 @@ class RegressionComputationLogic(ScriptedLoadableModuleLogic, VTKObservationMixi
     # Write the parameters needed in a CSV file
     CSVInputshapesparametersfilepath = os.path.join(outputDirectory, "CSVInputshapesparameters.csv")
     file = open(CSVInputshapesparametersfilepath, 'w')
-    cw = csv.writer(file, delimiter=',')
+    cw = csv.writer(file, delimiter=',', lineterminator='\n')
     for index in range(len(parameters_sorted)):
       parameters = parameters_sorted[index]
       cw.writerow(parameters)
