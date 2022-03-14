@@ -42,12 +42,13 @@ if(${EXTENSION_NAME}_SUPERBUILD)
   return()
 endif()
 
-if(NOT DEFINED Slicer_SOURCE_DIR)
-  find_package(shape4D REQUIRED)
+if(NOT DEFINED shape4D_SOURCE_DIR)
+  message(FATAL_ERROR "shape4D_SOURCE_DIR is not defined")
 endif()
 
 #-----------------------------------------------------------------------------
 # Extension modules
+add_subdirectory(${shape4D_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/shape4D)
 add_subdirectory(RegressionComputation)
 add_subdirectory(RegressionVisualization)
 ## NEXT_MODULE

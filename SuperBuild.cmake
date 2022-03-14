@@ -1,3 +1,35 @@
+include(FetchContent)
+
+#-----------------------------------------------------------------------------
+# Bundle remote modules and extensions adding source directories.
+#-----------------------------------------------------------------------------
+
+# shape4D
+set(extension_name "shape4D")
+set(${extension_name}_SOURCE_DIR "${CMAKE_BINARY_DIR}/${extension_name}")
+FetchContent_Populate(${extension_name}
+  SOURCE_DIR     ${${extension_name}_SOURCE_DIR}
+  GIT_REPOSITORY ${EP_GIT_PROTOCOL}://github.com/slicersalt/shape4D.git
+  GIT_TAG        0c53f0a0be7144806a16ddfc13e535a145d710e8 # slicersalt-2018-11-27-215f0b6
+  GIT_PROGRESS   1
+  QUIET
+  )
+set(shape4D_SOURCE_DIR ${${extension_name}_SOURCE_DIR})
+message(STATUS "Remote - ${extension_name} [OK]")
+mark_as_superbuild(shape4D_SOURCE_DIR:PATH)
+
+set(shape4D_SUPERBUILD OFF)
+mark_as_superbuild(shape4D_SUPERBUILD:BOOL)
+
+set(shape4D_USE_SEM ON)
+mark_as_superbuild(shape4D_USE_SEM:BOOL)
+
+set(shape4D_USE_VTK ON)
+mark_as_superbuild(shape4D_USE_VTK:BOOL)
+
+list(APPEND EXTERNAL_PROJECT_ADDITIONAL_DIRS
+  ${shape4D_SOURCE_DIR}/SuperBuild
+  )
 
 #-----------------------------------------------------------------------------
 # Enable and setup External project global properties
@@ -16,7 +48,7 @@ endforeach()
 set(proj ${SUPERBUILD_TOPLEVEL_PROJECT})
 
 set(${proj}_DEPENDS
-  shape4D
+  FFTW
   )
 
 # Set superbuild CMake variables
