@@ -10,7 +10,7 @@ set(${extension_name}_SOURCE_DIR "${CMAKE_BINARY_DIR}/${extension_name}")
 FetchContent_Populate(${extension_name}
   SOURCE_DIR     ${${extension_name}_SOURCE_DIR}
   GIT_REPOSITORY ${EP_GIT_PROTOCOL}://github.com/slicersalt/shape4D.git
-  GIT_TAG        0c53f0a0be7144806a16ddfc13e535a145d710e8 # slicersalt-2018-11-27-215f0b6
+  GIT_TAG        67201a6aaaaacc8677180f02af5e4a8348c1b673 # slicersalt-2018-11-27-215f0b6
   GIT_PROGRESS   1
   QUIET
   )
