@@ -11,7 +11,7 @@ set(EXTENSION_CONTRIBUTORS "Laura Pascal (Kitware Inc.), Beatriz Paniagua (Kitwa
 set(EXTENSION_DESCRIPTION "Computation and visualization of time-regressed shapes in a collection of 3D shape inputs associated to a linear variable")
 set(EXTENSION_ICONURL "https://raw.githubusercontent.com/slicersalt/slicersalt.github.io/master/img/favicons/favicon-128.png")
 set(EXTENSION_SCREENSHOTURLS "https://raw.githubusercontent.com/slicersalt/slicersalt.github.io/b34f1452faf111175b203d0172b6f45807d996e2/img/about-section/regression.gif")
-set(EXTENSION_DEPENDS "Sequences")
+set(EXTENSION_DEPENDS "NA")
 set(EXTENSION_STATUS Beta)
 set(EXTENSION_BUILD_SUBDIRECTORY ${PROJECT_NAME}-build)
 
